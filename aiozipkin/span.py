@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, TypeVar, Optional, Type
+from typing import TYPE_CHECKING, TypeVar, Optional, Type, Any
 from types import TracebackType
 
 from .constants import ERROR
@@ -12,11 +12,10 @@ if TYPE_CHECKING:
     from .tracer import Tracer  # flake8: noqa
 
 
-T = TypeVar('T', bound='SpanAbc')
+T = TypeVar("T", bound="SpanAbc")
 
 
 class SpanAbc(metaclass=ABCMeta):
-
     @property
     @abstractmethod
     def is_noop(self: T) -> bool:
@@ -29,7 +28,7 @@ class SpanAbc(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def tracer(self: T) -> 'Tracer':
+    def tracer(self: T) -> "Tracer":
         pass  # pragma: no cover
 
     @abstractmethod
@@ -37,26 +36,26 @@ class SpanAbc(metaclass=ABCMeta):
         pass  # pragma: no cover
 
     @abstractmethod
-    def finish(self: T, ts: OptTs = None,
-               exception: Optional[Exception] = None) -> T:
+    def finish(self: T, ts: OptTs = None, exception: Optional[Exception] = None) -> T:
         pass  # pragma: no cover
 
     @abstractmethod
-    def remote_endpoint(self: T,
-                        servce_name: OptStr, *,
-                        ipv4: OptStr = None,
-                        ipv6: OptStr = None,
-                        port: OptInt = None) -> T:
+    def remote_endpoint(
+        self: T,
+        servce_name: OptStr,
+        *,
+        ipv4: OptStr = None,
+        ipv6: OptStr = None,
+        port: OptInt = None
+    ) -> T:
         pass  # pragma: no cover
 
     @abstractmethod
-    def tag(self: T, key: str, value: str) -> T:
+    def tag(self: T, key: str, value: Any) -> T:
         pass  # pragma: no cover
 
     @abstractmethod
-    def annotate(self: T,
-                 value: str,
-                 ts: OptTs = None) -> T:
+    def annotate(self: T, value: str, ts: OptTs = None) -> T:
         pass  # pragma: no cover
 
     @abstractmethod
@@ -75,14 +74,17 @@ class SpanAbc(metaclass=ABCMeta):
         self.start()
         return self
 
-    def __exit__(self, exc_type: Optional[Type[Exception]],
-                 exc_value: Optional[Exception],
-                 traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[Exception]],
+        exc_value: Optional[Exception],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.finish(exception=exc_value)
 
 
 class NoopSpan(SpanAbc):
-    def __init__(self, tracer: 'Tracer', context: TraceContext) -> None:
+    def __init__(self, tracer: "Tracer", context: TraceContext) -> None:
         self._context = context
         self._tracer = tracer
 
@@ -95,46 +97,46 @@ class NoopSpan(SpanAbc):
         return self._context
 
     @property
-    def tracer(self) -> 'Tracer':
+    def tracer(self) -> "Tracer":
         return self._tracer
 
-    def start(self, ts: OptTs = None) -> 'NoopSpan':
+    def start(self, ts: OptTs = None) -> "NoopSpan":
         return self
 
-    def finish(self, ts: OptTs = None,
-               exception: Optional[Exception] = None) -> 'NoopSpan':
+    def finish(
+        self, ts: OptTs = None, exception: Optional[Exception] = None
+    ) -> "NoopSpan":
         return self
 
-    def remote_endpoint(self,
-                        servce_name: OptStr, *,
-                        ipv4: OptStr = None,
-                        ipv6: OptStr = None,
-                        port: OptInt = None) -> 'NoopSpan':
+    def remote_endpoint(
+        self,
+        servce_name: OptStr,
+        *,
+        ipv4: OptStr = None,
+        ipv6: OptStr = None,
+        port: OptInt = None
+    ) -> "NoopSpan":
         return self
 
-    def tag(self, key: str, value: str) -> 'NoopSpan':
+    def tag(self, key: str, value: str) -> "NoopSpan":
         return self
 
-    def annotate(self, value: str, ts: OptTs = None) -> 'NoopSpan':
+    def annotate(self, value: str, ts: OptTs = None) -> "NoopSpan":
         return self
 
-    def kind(self, span_kind: str) -> 'NoopSpan':
+    def kind(self, span_kind: str) -> "NoopSpan":
         return self
 
-    def name(self, span_name: str) -> 'NoopSpan':
+    def name(self, span_name: str) -> "NoopSpan":
         return self
 
-    def new_child(self,
-                  name: OptStr = None,
-                  kind: OptStr = None) -> 'NoopSpan':
+    def new_child(self, name: OptStr = None, kind: OptStr = None) -> "NoopSpan":
         context = self._tracer._next_context(self.context)
         return NoopSpan(self.tracer, context)
 
 
 class Span(SpanAbc):
-    def __init__(self, tracer: 'Tracer',
-                 context: TraceContext,
-                 record: Record) -> None:
+    def __init__(self, tracer: "Tracer", context: TraceContext, record: Record) -> None:
         self._context = context
         self._tracer = tracer
         self._record = record
@@ -148,16 +150,15 @@ class Span(SpanAbc):
         return self._context
 
     @property
-    def tracer(self) -> 'Tracer':
+    def tracer(self) -> "Tracer":
         return self._tracer
 
-    def start(self, ts: OptTs = None) -> 'Span':
+    def start(self, ts: OptTs = None) -> "Span":
         ts = make_timestamp(ts)
         self._record.start(ts)
         return self
 
-    def finish(self, ts: OptTs = None,
-               exception: Optional[Exception] = None) -> 'Span':
+    def finish(self, ts: OptTs = None, exception: Optional[Exception] = None) -> "Span":
         if exception is not None:
             self.tag(ERROR, str(exception))
         ts = make_timestamp(ts)
@@ -165,33 +166,36 @@ class Span(SpanAbc):
         self._tracer._send(self._record)
         return self
 
-    def remote_endpoint(self,
-                        servce_name: OptStr, *,
-                        ipv4: OptStr = None,
-                        ipv6: OptStr = None,
-                        port: OptInt = None) -> 'Span':
+    def remote_endpoint(
+        self,
+        servce_name: OptStr,
+        *,
+        ipv4: OptStr = None,
+        ipv6: OptStr = None,
+        port: OptInt = None
+    ) -> "Span":
         endpoint = Endpoint(servce_name, ipv4, ipv6, port)
         self._record.remote_endpoint(endpoint)
         return self
 
-    def tag(self, key: str, value: str) -> 'Span':
+    def tag(self, key: str, value: Any) -> "Span":
         self._record.set_tag(key, value)
         return self
 
-    def annotate(self, value: str, ts: OptTs = None) -> 'Span':
+    def annotate(self, value: str, ts: OptTs = None) -> "Span":
         ts = make_timestamp(ts)
         self._record.annotate(value, ts)
         return self
 
-    def kind(self, span_kind: str) -> 'Span':
+    def kind(self, span_kind: str) -> "Span":
         self._record.kind(span_kind)
         return self
 
-    def name(self, span_name: str) -> 'Span':
+    def name(self, span_name: str) -> "Span":
         self._record.name(span_name)
         return self
 
-    def new_child(self, name: OptStr = None, kind: OptStr = None) -> 'Span':
+    def new_child(self, name: OptStr = None, kind: OptStr = None) -> "Span":
         span = self.tracer.new_child(self.context)
         if name is not None:
             span.name(name)

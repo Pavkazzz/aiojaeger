@@ -1,25 +1,26 @@
 import os
 import re
 import sys
+
 from setuptools import setup, find_packages
 
-
-if sys.version_info < (3, 6, 0):
-    raise RuntimeError('aiozipkin does not support Python earlier than 3.6.0')
+if sys.version_info < (3, 7, 0):
+    raise RuntimeError('aiozipkin does not support Python earlier than 3.7.0')
 
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
 
-install_requires = ['aiohttp>=3.0.0']
+install_requires = ['aiohttp<4']
 extras_require = {}
 
 
 def read_version():
-    regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
-    init_py = os.path.join(os.path.dirname(__file__),
-                           'aiozipkin', '__init__.py')
+    regexp = re.compile(r'^__version__\W*=\W*"([\d.abrc]+)"')
+    init_py = os.path.join(
+        os.path.dirname(__file__), 'aiozipkin', '__init__.py'
+    )
     with open(init_py) as f:
         for line in f:
             match = regexp.match(line)
@@ -34,13 +35,12 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
     'Operating System :: POSIX',
     'Development Status :: 3 - Alpha',
     'Framework :: AsyncIO',
 ]
-
 
 setup(name='aiozipkin',
       version=read_version(),

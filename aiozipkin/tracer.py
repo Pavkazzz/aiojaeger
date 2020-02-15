@@ -1,6 +1,13 @@
-from typing import Optional, Dict, Awaitable, Any, AsyncContextManager, TYPE_CHECKING  # noqa
+from typing import (
+    Optional,
+    Dict,
+    Awaitable,
+    Any,
+    AsyncContextManager,
+    TYPE_CHECKING,
+)  # noqa
 
-from .context_managers import _ContextManager
+from aiozipkin.context_managers import _ContextManager
 from .helpers import TraceContext, Endpoint
 from .mypy_types import OptLoop, OptBool
 from .record import Record
@@ -9,29 +16,29 @@ from .span import Span, NoopSpan, SpanAbc
 from .transport import Transport, StubTransport, TransportABC
 from .utils import generate_random_64bit_string, generate_random_128bit_string
 
-
 if TYPE_CHECKING:
-    class _Base(AsyncContextManager['Tracer']):
+
+    class _Base(AsyncContextManager["Tracer"]):
         pass
+
+
 else:
+
     class _Base(AsyncContextManager):
         pass
 
 
 class Tracer(_Base):
-    def __init__(self,
-                 transport: TransportABC,
-                 sampler: SamplerABC,
-                 local_endpoint: Endpoint) -> None:
+    def __init__(
+            self, transport: TransportABC, sampler: SamplerABC, local_endpoint: Endpoint
+    ) -> None:
         super().__init__()
         self._records: Dict[TraceContext, Record] = {}
         self._transport = transport
         self._sampler = sampler
         self._local_endpoint = local_endpoint
 
-    def new_trace(self,
-                  sampled: OptBool = None,
-                  debug: bool = False) -> SpanAbc:
+    def new_trace(self, sampled: OptBool = None, debug: bool = False) -> SpanAbc:
         context = self._next_context(None, sampled=sampled, debug=debug)
         return self.to_span(context)
 
@@ -62,16 +69,17 @@ class Tracer(_Base):
         self._records.pop(record.context, None)
         self._transport.send(record)
 
-    def _next_context(self,
-                      context: Optional[TraceContext] = None,
-                      sampled: OptBool = None,
-                      debug: bool = False) -> TraceContext:
+    def _next_context(
+            self,
+            context: Optional[TraceContext] = None,
+            sampled: OptBool = None,
+            debug: bool = False,
+    ) -> TraceContext:
         span_id = generate_random_64bit_string()
         if context is not None:
             new_context = context._replace(
-                span_id=span_id,
-                parent_id=context.span_id,
-                shared=False)
+                span_id=span_id, parent_id=context.span_id, shared=False
+            )
             return new_context
 
         trace_id = generate_random_128bit_string()
@@ -84,37 +92,42 @@ class Tracer(_Base):
             span_id=span_id,
             sampled=sampled,
             debug=debug,
-            shared=False)
+            shared=False,
+        )
         return new_context
 
     async def close(self) -> None:
         await self._transport.close()
 
-    async def __aenter__(self) -> 'Tracer':
+    async def __aenter__(self) -> "Tracer":
         return self
 
     async def __aexit__(self, *args: Any) -> None:
         await self.close()
 
 
-def create(zipkin_address: str,
-           local_endpoint: Endpoint, *,
-           sample_rate: float = 0.01,
-           send_interval: float = 5,
-           loop: OptLoop = None) -> Awaitable[Tracer]:
+def create(
+        zipkin_address: str,
+        local_endpoint: Endpoint,
+        *,
+        sample_rate: float = 0.01,
+        send_interval: float = 5,
+        loop: OptLoop = None
 
+) -> Awaitable[Tracer]:
     async def build_tracer() -> Tracer:
         sampler = Sampler(sample_rate=sample_rate)
-        transport = Transport(
-            zipkin_address, send_interval=send_interval, loop=loop)
+        transport = Transport(zipkin_address, send_interval=send_interval, loop=loop)
         return Tracer(transport, sampler, local_endpoint)
-    result = _ContextManager(build_tracer())
-    return result
+
+    return _ContextManager(build_tracer())
 
 
-def create_custom(local_endpoint: Endpoint,
-                  transport: Optional[TransportABC] = None,
-                  sampler: Optional[SamplerABC] = None) -> Awaitable[Tracer]:
+def create_custom(
+        local_endpoint: Endpoint,
+        transport: Optional[TransportABC] = None,
+        sampler: Optional[SamplerABC] = None,
+) -> Awaitable[Tracer]:
     t = transport or StubTransport()
     sample_rate = 1  # sample everything
     s = sampler or Sampler(sample_rate=sample_rate)
@@ -122,5 +135,4 @@ def create_custom(local_endpoint: Endpoint,
     async def build_tracer() -> Tracer:
         return Tracer(t, s, local_endpoint)
 
-    result: Awaitable[Tracer] = _ContextManager(build_tracer())
-    return result
+    return _ContextManager(build_tracer())

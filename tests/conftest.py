@@ -13,7 +13,7 @@ import pytest
 from aiohttp.test_utils import TestServer
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def event_loop():
     asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -22,7 +22,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def loop(event_loop):
     return event_loop
 
@@ -33,10 +33,10 @@ def fake_transport():
     return transport
 
 
-@pytest.fixture(name='tracer')
+@pytest.fixture(name="tracer")
 def tracer_fixture(fake_transport):
     sampler = Sampler(sample_rate=1.0)
-    endpoint = create_endpoint('test_service', ipv4='127.0.0.1', port=8080)
+    endpoint = create_endpoint("test_service", ipv4="127.0.0.1", port=8080)
     # TODO: use context manger at some point
     return Tracer(fake_transport, sampler, endpoint)
 
@@ -44,12 +44,13 @@ def tracer_fixture(fake_transport):
 @pytest.fixture
 def context():
     context = TraceContext(
-        trace_id='6f9a20b5092fa5e144fd15cc31141cd4',
+        trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
         parent_id=None,
-        span_id='41baf1be2fb9bfc5',
+        span_id="41baf1be2fb9bfc5",
         sampled=True,
         debug=False,
-        shared=True)
+        shared=True,
+    )
     return context
 
 
@@ -61,11 +62,10 @@ async def client(loop):
 
 
 class FakeZipkin:
-
     def __init__(self, loop):
         self.next_errors = []
         self.app = web.Application()
-        self.app.router.add_post('/api/v2/spans', self.spans_handler)
+        self.app.router.add_post("/api/v2/spans", self.spans_handler)
         self.port = None
         self._loop = loop
         self._received_data = []
@@ -74,15 +74,15 @@ class FakeZipkin:
 
     @property
     def url(self):
-        return 'http://127.0.0.1:%s/api/v2/spans' % self.port
+        return "http://127.0.0.1:%s/api/v2/spans" % self.port
 
     async def spans_handler(self, request: web.Request) -> web.Response:
         if len(self.next_errors) > 0:
             err = self.next_errors.pop(0)
-            if err == 'disconnect':
+            if err == "disconnect":
                 request.transport.close()
                 await asyncio.sleep(1, loop=self._loop)
-            elif err == 'timeout':
+            elif err == "timeout":
                 await asyncio.sleep(60, loop=self._loop)
             return web.HTTPInternalServerError()
 
@@ -93,7 +93,7 @@ class FakeZipkin:
         if self._wait_fut is not None and self._wait_count == 0:
             self._wait_fut.set_result(None)
 
-        return aiohttp.web.Response(text='', status=200)
+        return aiohttp.web.Response(text="", status=200)
 
     def get_received_data(self) -> list:
         data = self._received_data
@@ -120,4 +120,4 @@ async def fake_zipkin(loop):
     await server.close()
 
 
-pytest_plugins = ['docker_fixtures']
+pytest_plugins = ["docker_fixtures"]

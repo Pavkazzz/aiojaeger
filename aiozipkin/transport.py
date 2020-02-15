@@ -11,6 +11,7 @@ from typing import (
     Callable,
     Awaitable,
 )  # flake8: noqa
+
 import aiohttp
 from aiohttp.client_exceptions import ClientError
 from yarl import URL
@@ -72,7 +73,9 @@ class BatchManager:
         self._active_batch: Optional[DataList] = None
         self._ender = self._loop.create_future()
         self._timer: Optional[asyncio.Future[Any]] = None
-        self._sender_task = asyncio.ensure_future(self._sender_loop(), loop=self._loop)
+        self._sender_task = asyncio.ensure_future(
+            self._sender_loop(), loop=self._loop
+        )
 
     def add(self, data: Dict[str, Any]) -> None:
         if self._active_batch is None:
@@ -117,12 +120,12 @@ class BatchManager:
 
     async def _wait(self) -> None:
         self._timer = asyncio.ensure_future(
-            asyncio.sleep(self._send_interval, loop=self._loop), loop=self._loop
+            asyncio.sleep(self._send_interval, loop=self._loop),
+            loop=self._loop,
         )
 
         await asyncio.wait(
-            [self._timer, self._ender],
-            return_when=asyncio.FIRST_COMPLETED,
+            [self._timer, self._ender], return_when=asyncio.FIRST_COMPLETED,
         )
 
 

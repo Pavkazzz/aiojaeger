@@ -1,7 +1,8 @@
 import asyncio
-from aiohttp.client import ClientTimeout
 
 import pytest
+from aiohttp.client import ClientTimeout
+
 import aiozipkin as az
 import aiozipkin.transport as azt
 

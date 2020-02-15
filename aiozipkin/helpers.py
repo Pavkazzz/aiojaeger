@@ -3,7 +3,6 @@ from typing import NamedTuple, Optional, Dict, List, Any
 
 from .mypy_types import Headers, OptBool, OptInt, OptStr, OptTs
 
-
 # possible span kinds
 CLIENT = "CLIENT"
 SERVER = "SERVER"
@@ -54,12 +53,21 @@ class TraceContext(_TraceContext):
 
 Endpoint = NamedTuple(
     "Endpoint",
-    [("serviceName", OptStr), ("ipv4", OptStr), ("ipv6", OptStr), ("port", OptInt)],
+    [
+        ("serviceName", OptStr),
+        ("ipv4", OptStr),
+        ("ipv6", OptStr),
+        ("port", OptInt),
+    ],
 )
 
 
 def create_endpoint(
-    service_name: str, *, ipv4: OptStr = None, ipv6: OptStr = None, port: OptInt = None
+    service_name: str,
+    *,
+    ipv4: OptStr = None,
+    ipv6: OptStr = None,
+    port: OptInt = None
 ) -> Endpoint:
     """Factory function to create Endpoint object.
     """

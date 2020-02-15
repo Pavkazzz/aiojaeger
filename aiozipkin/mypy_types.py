@@ -1,7 +1,6 @@
 import asyncio  # flake8: noqa
 from typing import Optional, Mapping
 
-
 Headers = Mapping[str, str]
 OptStr = Optional[str]
 OptTs = Optional[float]

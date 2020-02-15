@@ -1,5 +1,5 @@
-from aiozipkin.record import Record
 from aiozipkin.helpers import TraceContext, Endpoint
+from aiozipkin.record import Record
 
 
 def test_basic_ctr():

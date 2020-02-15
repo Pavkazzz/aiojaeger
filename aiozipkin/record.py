@@ -1,5 +1,4 @@
 from typing import TypeVar, Dict, Any, List, NamedTuple, Optional
-from .mypy_types import OptInt, OptStr  # flake8: noqa
 
 from .helpers import (
     CONSUMER,
@@ -8,7 +7,7 @@ from .helpers import (
     TraceContext,
     filter_none,
 )
-
+from .mypy_types import OptInt, OptStr  # flake8: noqa
 
 Annotation = NamedTuple("Annotation", [("value", str), ("timestamp", int)])
 
@@ -21,7 +20,9 @@ T = TypeVar("T", bound="Record")
 
 
 class Record:
-    def __init__(self: T, context: TraceContext, local_endpoint: Endpoint) -> None:
+    def __init__(
+        self: T, context: TraceContext, local_endpoint: Endpoint
+    ) -> None:
         self._context = context
         self._local_endpoint = _endpoint_asdict(local_endpoint)
         self._finished = False

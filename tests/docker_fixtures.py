@@ -8,7 +8,10 @@ from async_generator import yield_, async_generator
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--no-pull", action="store_true", default=False, help=("Force docker pull")
+        "--no-pull",
+        action="store_true",
+        default=False,
+        help=("Force docker pull"),
     )
 
 
@@ -59,7 +62,7 @@ async def zipkin_server(docker, docker_pull):
             "Image": image,
             "AttachStdout": False,
             "AttachStderr": False,
-            "HostConfig": {"PublishAllPorts": True,},
+            "HostConfig": {"PublishAllPorts": True},
         },
     )
     await container.start()
@@ -104,7 +107,7 @@ async def jaeger_server(docker, docker_pull):
             "Image": image,
             "AttachStdout": False,
             "AttachStderr": False,
-            "HostConfig": {"PublishAllPorts": True,},
+            "HostConfig": {"PublishAllPorts": True},
             "Env": ["COLLECTOR_ZIPKIN_HTTP_PORT=9411"],
             "ExposedPorts": {
                 "14268/tcp": {},

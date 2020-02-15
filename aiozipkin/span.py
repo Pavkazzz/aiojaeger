@@ -1,16 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, TypeVar, Optional, Type, Any
 from types import TracebackType
+from typing import TYPE_CHECKING, TypeVar, Optional, Type, Any
 
 from .constants import ERROR
 from .helpers import Endpoint, make_timestamp, TraceContext
 from .mypy_types import OptInt, OptStr, OptTs
 from .record import Record
 
-
 if TYPE_CHECKING:
     from .tracer import Tracer  # flake8: noqa
-
 
 T = TypeVar("T", bound="SpanAbc")
 
@@ -36,7 +34,9 @@ class SpanAbc(metaclass=ABCMeta):
         pass  # pragma: no cover
 
     @abstractmethod
-    def finish(self: T, ts: OptTs = None, exception: Optional[Exception] = None) -> T:
+    def finish(
+        self: T, ts: OptTs = None, exception: Optional[Exception] = None
+    ) -> T:
         pass  # pragma: no cover
 
     @abstractmethod
@@ -130,13 +130,17 @@ class NoopSpan(SpanAbc):
     def name(self, span_name: str) -> "NoopSpan":
         return self
 
-    def new_child(self, name: OptStr = None, kind: OptStr = None) -> "NoopSpan":
+    def new_child(
+        self, name: OptStr = None, kind: OptStr = None
+    ) -> "NoopSpan":
         context = self._tracer._next_context(self.context)
         return NoopSpan(self.tracer, context)
 
 
 class Span(SpanAbc):
-    def __init__(self, tracer: "Tracer", context: TraceContext, record: Record) -> None:
+    def __init__(
+        self, tracer: "Tracer", context: TraceContext, record: Record
+    ) -> None:
         self._context = context
         self._tracer = tracer
         self._record = record
@@ -158,7 +162,9 @@ class Span(SpanAbc):
         self._record.start(ts)
         return self
 
-    def finish(self, ts: OptTs = None, exception: Optional[Exception] = None) -> "Span":
+    def finish(
+        self, ts: OptTs = None, exception: Optional[Exception] = None
+    ) -> "Span":
         if exception is not None:
             self.tag(ERROR, str(exception))
         ts = make_timestamp(ts)

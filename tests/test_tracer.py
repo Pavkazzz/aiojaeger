@@ -1,13 +1,14 @@
 from unittest import mock
 
 import pytest
+
 from aiozipkin.helpers import (
     TraceContext,
     create_endpoint,
 )
+from aiozipkin.sampler import SamplerABC
 from aiozipkin.tracer import NoopSpan, Span, create_custom
 from aiozipkin.transport import StubTransport
-from aiozipkin.sampler import SamplerABC
 
 
 def test_basic(tracer, fake_transport):
@@ -91,7 +92,6 @@ def test_noop_span_methods(tracer):
 
 
 def test_trace_join_span(tracer, context):
-
     with tracer.join_span(context) as span:
         span.name("name")
 
@@ -107,7 +107,6 @@ def test_trace_join_span(tracer, context):
 
 
 def test_trace_new_child(tracer, context):
-
     with tracer.new_child(context) as span:
         span.name("name")
 
@@ -117,7 +116,6 @@ def test_trace_new_child(tracer, context):
 
 
 def test_span_new_child(tracer, context, fake_transport):
-
     with tracer.new_child(context) as span:
         span.name("name")
         with span.new_child("child", "CLIENT") as child_span1:
@@ -174,7 +172,9 @@ async def test_create_custom(fake_transport):
         def is_sampled(self, trace_id: str):
             return True
 
-    with mock.patch("aiozipkin.tracer.Tracer") as tracer_stub:  # type: mock.MagicMock
+    with mock.patch(
+        "aiozipkin.tracer.Tracer"
+    ) as tracer_stub:  # type: mock.MagicMock
         await create_custom(endpoint, fake_transport, FakeSampler())
         assert isinstance(tracer_stub.call_args[0][0], StubTransport)
         assert isinstance(tracer_stub.call_args[0][1], FakeSampler)

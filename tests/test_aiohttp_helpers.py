@@ -1,13 +1,13 @@
 import asyncio
-import aiozipkin as az
+from unittest.mock import patch, Mock
 
+import pytest
 from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
 from aiohttp.web_exceptions import HTTPNotFound, HTTPException
-from aiozipkin.aiohttp_helpers import middleware_maker
 
-import pytest
-from unittest.mock import patch, Mock
+import aiozipkin as az
+from aiozipkin.aiohttp_helpers import middleware_maker
 
 
 def test_basic_setup(tracer):
@@ -82,7 +82,9 @@ valid_ips = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("version,address_in,address_out", valid_ips)
-async def test_middleware_with_valid_ip(tracer, version, address_in, address_out):
+async def test_middleware_with_valid_ip(
+    tracer, version, address_in, address_out
+):
     if address_out is None:
         address_out = address_in
 

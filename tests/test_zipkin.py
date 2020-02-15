@@ -4,8 +4,9 @@ import logging
 import tracemalloc
 
 import pytest
-import aiozipkin as az
 from yarl import URL
+
+import aiozipkin as az
 
 
 async def _retry_zipkin_client(url, client, retries=5, backoff_time=1):
@@ -25,7 +26,11 @@ async def test_basic(zipkin_url, client, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
     interval = 50
     tracer = await az.create(
-        zipkin_url, endpoint, sample_rate=1.0, send_interval=interval, loop=loop
+        zipkin_url,
+        endpoint,
+        sample_rate=1.0,
+        send_interval=interval,
+        loop=loop,
     )
 
     with tracer.new_trace(sampled=True) as span:
@@ -81,7 +86,9 @@ async def test_exception_in_span(zipkin_url, client, loop):
 
     url = URL(zipkin_url).with_path("/zipkin/api/v2/traces")
     data = await _retry_zipkin_client(url, client)
-    assert any({"error": "foo"} == s.get("tags", {}) for trace in data for s in trace)
+    assert any(
+        {"error": "foo"} == s.get("tags", {}) for trace in data for s in trace
+    )
 
 
 @pytest.mark.asyncio
@@ -90,7 +97,11 @@ async def test_zipkin_error(client, loop, caplog):
     interval = 50
     zipkin_url = "https://httpbin.org/status/404"
     async with az.create(
-        zipkin_url, endpoint, sample_rate=1.0, send_interval=interval, loop=loop
+        zipkin_url,
+        endpoint,
+        sample_rate=1.0,
+        send_interval=interval,
+        loop=loop,
     ) as tracer:
         with tracer.new_trace(sampled=True) as span:
             span.kind(az.CLIENT)
@@ -106,7 +117,6 @@ async def test_zipkin_error(client, loop, caplog):
 
 @pytest.mark.asyncio
 async def test_leak_in_transport(zipkin_url, client, loop):
-
     tracemalloc.start()
 
     endpoint = az.create_endpoint("simple_service")

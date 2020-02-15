@@ -1,10 +1,9 @@
 import aiohttp
-
-import aiozipkin as az
 import pytest
-
 from aiohttp import web
 from async_generator import yield_, async_generator
+
+import aiozipkin as az
 
 
 async def handler(request):

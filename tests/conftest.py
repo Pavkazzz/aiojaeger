@@ -2,15 +2,15 @@ import asyncio
 import gc
 
 import aiohttp
+import pytest
 from aiohttp import web
+from aiohttp.test_utils import TestServer
+from async_generator import yield_, async_generator
+
 from aiozipkin.helpers import create_endpoint, TraceContext
 from aiozipkin.sampler import Sampler
 from aiozipkin.tracer import Tracer
 from aiozipkin.transport import StubTransport
-from async_generator import yield_, async_generator
-
-import pytest
-from aiohttp.test_utils import TestServer
 
 
 @pytest.fixture(scope="session")

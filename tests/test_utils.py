@@ -25,13 +25,25 @@ def test_generate_random_128bit_string(rand):
 
 
 def test_unsigned_hex_to_signed_int():
-    assert utils.unsigned_hex_to_signed_int("17133d482ba4f605") == 1662740067609015813
-    assert utils.unsigned_hex_to_signed_int("b6dbb1c2b362bf51") == -5270423489115668655
+    assert (
+        utils.unsigned_hex_to_signed_int("17133d482ba4f605")
+        == 1662740067609015813
+    )
+    assert (
+        utils.unsigned_hex_to_signed_int("b6dbb1c2b362bf51")
+        == -5270423489115668655
+    )
 
 
 def test_signed_int_to_unsigned_hex():
-    assert utils.signed_int_to_unsigned_hex(1662740067609015813) == "17133d482ba4f605"
-    assert utils.signed_int_to_unsigned_hex(-5270423489115668655) == "b6dbb1c2b362bf51"
+    assert (
+        utils.signed_int_to_unsigned_hex(1662740067609015813)
+        == "17133d482ba4f605"
+    )
+    assert (
+        utils.signed_int_to_unsigned_hex(-5270423489115668655)
+        == "b6dbb1c2b362bf51"
+    )
 
     if sys.version_info > (3,):
         with mock.patch("builtins.hex") as mock_hex:

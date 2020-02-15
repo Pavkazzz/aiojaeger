@@ -111,7 +111,7 @@ async def test_zipkin_error(client, loop, caplog):
     msg = "zipkin responded with code: "
     assert msg in str(caplog.records[0].exc_info)
 
-    t = ("aiozipkin", logging.ERROR, "Can not send spans to zipkin")
+    t = ("root", logging.ERROR, "Can not send spans to zipkin")
     assert caplog.record_tuples == [t]
 
 

@@ -23,7 +23,7 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Lint with flake8
       run: |
-        make test
+        make flake
     - name: Test with pytest
       run: |
         make vtest

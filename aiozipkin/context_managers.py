@@ -43,10 +43,7 @@ class _ContextManager(_Base[T]):
         return t
 
     async def __aexit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc: Optional[BaseException],
-        tb: Optional[TracebackType],
+        self, exc_type: Optional[Type[BaseException]], exc: Optional[BaseException], tb: Optional[TracebackType],
     ) -> Optional[bool]:
         if self._obj is None:
             raise RuntimeError("__aexit__ called before __aenter__")

@@ -35,18 +35,10 @@ def test_basic(tracer, fake_transport):
         "duration": mock.ANY,
         "id": mock.ANY,
         "kind": "CLIENT",
-        "localEndpoint": {
-            "serviceName": "test_service",
-            "ipv4": "127.0.0.1",
-            "port": 8080,
-        },
+        "localEndpoint": {"serviceName": "test_service", "ipv4": "127.0.0.1", "port": 8080,},
         "name": "root_span",
         "parentId": None,
-        "remoteEndpoint": {
-            "serviceName": "service_a",
-            "ipv4": "127.0.0.1",
-            "port": 8080,
-        },
+        "remoteEndpoint": {"serviceName": "service_a", "ipv4": "127.0.0.1", "port": 8080,},
         "shared": False,
         "tags": {"span_type": "root"},
         "timestamp": mock.ANY,
@@ -172,9 +164,7 @@ async def test_create_custom(fake_transport):
         def is_sampled(self, trace_id: str):
             return True
 
-    with mock.patch(
-        "aiozipkin.tracer.Tracer"
-    ) as tracer_stub:  # type: mock.MagicMock
+    with mock.patch("aiozipkin.tracer.Tracer") as tracer_stub:  # type: mock.MagicMock
         await create_custom(endpoint, fake_transport, FakeSampler())
         assert isinstance(tracer_stub.call_args[0][0], StubTransport)
         assert isinstance(tracer_stub.call_args[0][1], FakeSampler)

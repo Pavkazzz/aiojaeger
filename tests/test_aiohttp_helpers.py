@@ -82,9 +82,7 @@ valid_ips = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("version,address_in,address_out", valid_ips)
-async def test_middleware_with_valid_ip(
-    tracer, version, address_in, address_out
-):
+async def test_middleware_with_valid_ip(tracer, version, address_in, address_out):
     if address_out is None:
         address_out = address_in
 
@@ -98,9 +96,7 @@ async def test_middleware_with_valid_ip(
     async def handler(request):
         return web.Response(body=b"data")
 
-    req = make_mocked_request(
-        "GET", "/", headers={"token": "x"}, transport=transp, app=app
-    )
+    req = make_mocked_request("GET", "/", headers={"token": "x"}, transport=transp, app=app)
 
     middleware = middleware_maker()
     with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:
@@ -137,9 +133,7 @@ async def test_middleware_with_invalid_ip(tracer, version, address):
     async def handler(request):
         return web.Response(body=b"data")
 
-    req = make_mocked_request(
-        "GET", "/", headers={"token": "x"}, transport=transp, app=app
-    )
+    req = make_mocked_request("GET", "/", headers={"token": "x"}, transport=transp, app=app)
 
     middleware = middleware_maker()
     with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:

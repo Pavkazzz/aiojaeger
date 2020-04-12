@@ -111,9 +111,7 @@ def _set_span_properties(span: SpanAbc, request: Request) -> None:
 
 
 @contextmanager
-def set_context_value(
-    context_var: OptTraceVar, value: TraceContext
-) -> Generator[OptTraceVar, None, None]:
+def set_context_value(context_var: OptTraceVar, value: TraceContext) -> Generator[OptTraceVar, None, None]:
     token = context_var.set(value)
     try:
         yield context_var
@@ -125,6 +123,7 @@ def middleware_maker(
     skip_routes: Optional[AbstractRoute] = None,
     tracer_key: str = APP_AIOZIPKIN_KEY,
     request_key: str = REQUEST_AIOZIPKIN_KEY,
+    match_path: str = "/",
 ) -> Middleware:
     s = skip_routes
     skip_routes_set: Set[AbstractRoute] = set(s) if s else set()
@@ -132,13 +131,15 @@ def middleware_maker(
     _middleware: Callable[[Middleware], Middleware] = middleware
 
     @_middleware
-    async def aiozipkin_middleware(
-        request: Request, handler: Handler
-    ) -> Response:
+    async def aiozipkin_middleware(request: Request, handler: Handler) -> Response:
         # route is in skip list, we do not track anything with zipkin
         if request.match_info.route in skip_routes_set:
             resp = await handler(request)
             return resp
+
+        # skip not matched route
+        if not request.path.startswith(match_path):
+            return await handler(request)
 
         tracer = request.app[tracer_key]
         span = _get_span(request, tracer)
@@ -168,7 +169,8 @@ def setup(
     *,
     skip_routes: Optional[AbstractRoute] = None,
     tracer_key: str = APP_AIOZIPKIN_KEY,
-    request_key: str = REQUEST_AIOZIPKIN_KEY
+    request_key: str = REQUEST_AIOZIPKIN_KEY,
+    match_path: str = "/",
 ) -> Application:
     """Sets required parameters in aiohttp applications for aiozipkin.
 
@@ -178,7 +180,7 @@ def setup(
     """
     app[tracer_key] = tracer
     m = middleware_maker(
-        skip_routes=skip_routes, tracer_key=tracer_key, request_key=request_key
+        skip_routes=skip_routes, tracer_key=tracer_key, request_key=request_key, match_path=match_path,
     )
     app.middlewares.append(m)
 
@@ -191,9 +193,7 @@ def setup(
     return app
 
 
-def get_tracer(
-    app: Application, tracer_key: str = APP_AIOZIPKIN_KEY
-) -> Tracer:
+def get_tracer(app: Application, tracer_key: str = APP_AIOZIPKIN_KEY) -> Tracer:
     """Returns tracer object from application context.
 
     By default tracer has APP_AIOZIPKIN_KEY in aiohttp application context,
@@ -202,9 +202,7 @@ def get_tracer(
     return cast(Tracer, app[tracer_key])
 
 
-def request_span(
-    request: Request, request_key: str = REQUEST_AIOZIPKIN_KEY
-) -> SpanAbc:
+def request_span(request: Request, request_key: str = REQUEST_AIOZIPKIN_KEY) -> SpanAbc:
     """Returns span created by middleware from request context, you can use it
     as parent on next child span.
     """
@@ -219,14 +217,9 @@ class ZipkinClientSignals:
     def __init__(self, tracer: Tracer) -> None:
         self._tracer = tracer
 
-    def _get_span_context(
-        self, trace_config_ctx: SimpleNamespace
-    ) -> Optional[TraceContext]:
+    def _get_span_context(self, trace_config_ctx: SimpleNamespace) -> Optional[TraceContext]:
         trace_request_ctx = trace_config_ctx.trace_request_ctx
-        has_explicit_context = (
-            isinstance(trace_request_ctx, dict)
-            and "span_context" in trace_request_ctx
-        )
+        has_explicit_context = isinstance(trace_request_ctx, dict) and "span_context" in trace_request_ctx
         if has_explicit_context:
             r: TraceContext = trace_request_ctx["span_context"]
             return r
@@ -238,10 +231,7 @@ class ZipkinClientSignals:
         return None
 
     async def on_request_start(
-        self,
-        session: aiohttp.ClientSession,
-        context: SimpleNamespace,
-        params: TraceRequestStartParams,
+        self, session: aiohttp.ClientSession, context: SimpleNamespace, params: TraceRequestStartParams,
     ) -> None:
         span_context = self._get_span_context(context)
         if span_context is None:
@@ -262,10 +252,7 @@ class ZipkinClientSignals:
             p.headers.update(span_headers)
 
     async def on_request_end(
-        self,
-        session: aiohttp.ClientSession,
-        context: SimpleNamespace,
-        params: TraceRequestEndParams,
+        self, session: aiohttp.ClientSession, context: SimpleNamespace, params: TraceRequestEndParams,
     ) -> None:
         span_context = self._get_span_context(context)
         if span_context is None:
@@ -276,10 +263,7 @@ class ZipkinClientSignals:
         delattr(context, "_span")
 
     async def on_request_exception(
-        self,
-        session: aiohttp.ClientSession,
-        context: SimpleNamespace,
-        params: TraceRequestExceptionParams,
+        self, session: aiohttp.ClientSession, context: SimpleNamespace, params: TraceRequestExceptionParams,
     ) -> None:
 
         span_context = self._get_span_context(context)

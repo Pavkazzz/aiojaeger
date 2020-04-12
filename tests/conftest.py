@@ -5,7 +5,6 @@ import aiohttp
 import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
-from async_generator import yield_, async_generator
 
 from aiozipkin.helpers import create_endpoint, TraceContext
 from aiozipkin.sampler import Sampler
@@ -55,10 +54,9 @@ def context():
 
 
 @pytest.fixture
-@async_generator
 async def client(loop):
-    async with aiohttp.ClientSession(loop=loop) as client:
-        await yield_(client)
+    async with aiohttp.ClientSession() as client:
+        yield client
 
 
 class FakeZipkin:
@@ -81,9 +79,9 @@ class FakeZipkin:
             err = self.next_errors.pop(0)
             if err == "disconnect":
                 request.transport.close()
-                await asyncio.sleep(1, loop=self._loop)
+                await asyncio.sleep(1)
             elif err == "timeout":
-                await asyncio.sleep(60, loop=self._loop)
+                await asyncio.sleep(60)
             return web.HTTPInternalServerError()
 
         data = await request.json()
@@ -101,21 +99,20 @@ class FakeZipkin:
         return data
 
     def wait_data(self, count):
-        self._wait_fut = asyncio.Future(loop=self._loop)
+        self._wait_fut = self._loop.create_future()
         self._wait_count = count
         return self._wait_fut
 
 
 @pytest.fixture
-@async_generator
 async def fake_zipkin(loop):
     zipkin = FakeZipkin(loop=loop)
 
-    server = TestServer(zipkin.app, loop=loop)
+    server = TestServer(zipkin.app)
     await server.start_server()
     zipkin.port = server.port
 
-    await yield_(zipkin)
+    yield zipkin
 
     await server.close()
 

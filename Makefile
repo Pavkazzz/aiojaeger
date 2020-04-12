@@ -20,6 +20,7 @@ bandit:
 
 pyroma:
 	pyroma -d .
+
 mypy:
 	mypy aiozipkin --ignore-missing-imports --disallow-untyped-calls --no-site-packages --strict
 
@@ -66,5 +67,12 @@ zipkin_stop:
 doc:
 	make -C docs html
 	@echo "open file://`pwd`/docs/_build/html/index.html"
+
+develop:
+	python3.8 -m venv env
+	source env/bin/activate
+	pip install -r requirements-dev.txt
+	pip install -r requirements-doc.txt
+
 
 .PHONY: all flake test vtest cov clean doc ci

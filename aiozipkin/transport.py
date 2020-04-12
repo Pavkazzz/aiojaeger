@@ -1,5 +1,6 @@
 import abc
 import asyncio
+import logging
 from collections import deque
 from typing import (
     List,
@@ -16,9 +17,9 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from yarl import URL
 
-from .log import logger
-from .mypy_types import OptLoop
 from .record import Record
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=5 * 60)
 BATCHES_MAX_COUNT = 10 ** 4
@@ -55,27 +56,18 @@ class StubTransport(TransportABC):
 
 
 class BatchManager:
-    def __init__(
-        self,
-        max_size: int,
-        send_interval: float,
-        attempt_count: int,
-        send_data: SendDataCoro,
-        loop: asyncio.AbstractEventLoop,
-    ) -> None:
+    def __init__(self, max_size: int, send_interval: float, attempt_count: int, send_data: SendDataCoro,) -> None:
+        loop = asyncio.get_event_loop()
         self._max_size = max_size
         self._send_interval = send_interval
         self._send_data = send_data
         self._attempt_count = attempt_count
-        self._loop = loop
         self._max = BATCHES_MAX_COUNT
         self._sending_batches: SndBatches = deque([], maxlen=self._max)
         self._active_batch: Optional[DataList] = None
-        self._ender = self._loop.create_future()
+        self._ender = loop.create_future()
         self._timer: Optional[asyncio.Future[Any]] = None
-        self._sender_task = asyncio.ensure_future(
-            self._sender_loop(), loop=self._loop
-        )
+        self._sender_task = asyncio.ensure_future(self._sender_loop())
 
     def add(self, data: Dict[str, Any]) -> None:
         if self._active_batch is None:
@@ -119,10 +111,7 @@ class BatchManager:
                     self._sending_batches.append((attempt, batch))
 
     async def _wait(self) -> None:
-        self._timer = asyncio.ensure_future(
-            asyncio.sleep(self._send_interval, loop=self._loop),
-            loop=self._loop,
-        )
+        self._timer = asyncio.ensure_future(asyncio.sleep(self._send_interval),)
 
         await asyncio.wait(
             [self._timer, self._ender], return_when=asyncio.FIRST_COMPLETED,
@@ -134,7 +123,6 @@ class Transport(TransportABC):
         self,
         address: str,
         send_interval: float = 5,
-        loop: OptLoop = None,
         *,
         send_max_size: int = 100,
         send_attempt_count: int = 3,
@@ -144,21 +132,13 @@ class Transport(TransportABC):
         self._queue: DataList = []
         self._closing = False
         self._send_interval = send_interval
-        self._loop = loop or asyncio.get_event_loop()
+
         if send_timeout is None:
             send_timeout = DEFAULT_TIMEOUT
-        self._session = aiohttp.ClientSession(
-            loop=self._loop,
-            timeout=send_timeout,
-            headers={"Content-Type": "application/json"},
-        )
-        self._batch_manager = BatchManager(
-            send_max_size,
-            send_interval,
-            send_attempt_count,
-            self._send_data,
-            self._loop,
-        )
+
+        self._session = aiohttp.ClientSession(timeout=send_timeout, headers={"Content-Type": "application/json"},)
+
+        self._batch_manager = BatchManager(send_max_size, send_interval, send_attempt_count, self._send_data,)
 
     def send(self, record: Record) -> None:
         data = record.asdict()
@@ -170,9 +150,7 @@ class Transport(TransportABC):
             async with self._session.post(self._address, json=data) as resp:
                 body = await resp.text()
                 if resp.status >= 300:
-                    msg = "zipkin responded with code: {} and body: {}".format(
-                        resp.status, body
-                    )
+                    msg = "zipkin responded with code: {} and body: {}".format(resp.status, body)
                     raise RuntimeError(msg)
 
         except (asyncio.TimeoutError, ClientError):

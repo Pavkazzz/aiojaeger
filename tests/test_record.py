@@ -29,23 +29,9 @@ def test_basic_ctr():
         "duration": 1,
         "debug": True,
         "shared": True,
-        "localEndpoint": {
-            "serviceName": "string",
-            "ipv4": "string",
-            "ipv6": "string",
-            "port": 0,
-        },
-        "remoteEndpoint": {
-            "serviceName": "string",
-            "ipv4": "string",
-            "ipv6": "string",
-            "port": 0,
-        },
+        "localEndpoint": {"serviceName": "string", "ipv4": "string", "ipv6": "string", "port": 0,},
+        "remoteEndpoint": {"serviceName": "string", "ipv4": "string", "ipv6": "string", "port": 0,},
         "annotations": [{"timestamp": 0, "value": "string"}],
-        "tags": {
-            "additionalProp1": "string",
-            "additionalProp2": "string",
-            "additionalProp3": "string",
-        },
+        "tags": {"additionalProp1": "string", "additionalProp2": "string", "additionalProp3": "string",},
     }
     assert dict_record == expected

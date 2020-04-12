@@ -8,10 +8,7 @@ from async_generator import yield_, async_generator
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--no-pull",
-        action="store_true",
-        default=False,
-        help=("Force docker pull"),
+        "--no-pull", action="store_true", default=False, help=("Force docker pull"),
     )
 
 
@@ -58,12 +55,7 @@ async def zipkin_server(docker, docker_pull):
 
     container = await docker.containers.create_or_replace(
         name="zipkin-server-{tag}".format(tag=tag),
-        config={
-            "Image": image,
-            "AttachStdout": False,
-            "AttachStderr": False,
-            "HostConfig": {"PublishAllPorts": True},
-        },
+        config={"Image": image, "AttachStdout": False, "AttachStderr": False, "HostConfig": {"PublishAllPorts": True},},
     )
     await container.start()
     port = (await container.port(9411))[0]["HostPort"]

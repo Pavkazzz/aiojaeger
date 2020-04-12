@@ -51,24 +51,10 @@ class TraceContext(_TraceContext):
         return make_single_header(self)
 
 
-Endpoint = NamedTuple(
-    "Endpoint",
-    [
-        ("serviceName", OptStr),
-        ("ipv4", OptStr),
-        ("ipv6", OptStr),
-        ("port", OptInt),
-    ],
-)
+Endpoint = NamedTuple("Endpoint", [("serviceName", OptStr), ("ipv4", OptStr), ("ipv6", OptStr), ("port", OptInt)])
 
 
-def create_endpoint(
-    service_name: str,
-    *,
-    ipv4: OptStr = None,
-    ipv6: OptStr = None,
-    port: OptInt = None
-) -> Endpoint:
+def create_endpoint(service_name: str, *, ipv4: OptStr = None, ipv6: OptStr = None, port: OptInt = None) -> Endpoint:
     """Factory function to create Endpoint object.
     """
     return Endpoint(service_name, ipv4, ipv6, port)

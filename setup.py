@@ -3,8 +3,6 @@ import sys
 
 from setuptools import find_packages, setup
 
-from aiozipkin.version import __version__
-
 if sys.version_info < (3, 7, 0):
     raise RuntimeError("aiozipkin does not support Python earlier than 3.7.0")
 

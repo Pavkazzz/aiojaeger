@@ -1,7 +1,6 @@
 import aiohttp
 import pytest
 from aiohttp import web
-from async_generator import yield_, async_generator
 
 import aiozipkin as az
 
@@ -28,7 +27,6 @@ async def error_handler(request):
 
 
 @pytest.fixture
-@async_generator
 async def client(test_client, tracer):
     app = web.Application()
     app.router.add_get("/simple", handler)
@@ -40,7 +38,7 @@ async def client(test_client, tracer):
 
     az.setup(app, tracer)
     c = await test_client(app)
-    await yield_(c)
+    yield c
 
     await session.close()
 
@@ -85,14 +83,14 @@ async def test_client_signals(tracer, fake_transport):
         resp = await session.get(url, trace_request_ctx=ctx)
         data = await resp.read()
         assert len(data) > 0
-        assert az.make_context(resp.request_info.headers) is None
+        assert tracer.make_context(resp.request_info.headers) is None
 
         # by default headers added
         ctx = {"span_context": span.context}
         resp = await session.get(url, trace_request_ctx=ctx)
         await resp.text()
         assert len(data) > 0
-        context = az.make_context(resp.request_info.headers)
+        context = tracer.make_context(resp.request_info.headers)
         assert context.trace_id == span.context.trace_id
 
     await session.close()

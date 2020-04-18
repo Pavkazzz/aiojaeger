@@ -2,11 +2,9 @@ from unittest import mock
 
 import pytest
 
-from aiozipkin.helpers import (
-    TraceContext,
-    create_endpoint,
-)
+from aiozipkin.helpers import create_endpoint
 from aiozipkin.sampler import SamplerABC
+from aiozipkin.spancontext import DummyTraceContext
 from aiozipkin.tracer import NoopSpan, Span, create_custom
 from aiozipkin.transport import StubTransport
 
@@ -35,10 +33,18 @@ def test_basic(tracer, fake_transport):
         "duration": mock.ANY,
         "id": mock.ANY,
         "kind": "CLIENT",
-        "localEndpoint": {"serviceName": "test_service", "ipv4": "127.0.0.1", "port": 8080,},
+        "localEndpoint": {
+            "serviceName": "test_service",
+            "ipv4": "127.0.0.1",
+            "port": 8080,
+        },
         "name": "root_span",
         "parentId": None,
-        "remoteEndpoint": {"serviceName": "service_a", "ipv4": "127.0.0.1", "port": 8080,},
+        "remoteEndpoint": {
+            "serviceName": "service_a",
+            "ipv4": "127.0.0.1",
+            "port": 8080,
+        },
         "shared": False,
         "tags": {"span_type": "root"},
         "timestamp": mock.ANY,
@@ -51,7 +57,7 @@ def test_basic(tracer, fake_transport):
 
 
 def test_noop_span_methods(tracer):
-    context = TraceContext(
+    context = DummyTraceContext(
         trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
         parent_id=None,
         span_id="41baf1be2fb9bfc5",
@@ -91,7 +97,7 @@ def test_trace_join_span(tracer, context):
     assert span.context.span_id == context.span_id
     assert span.context.parent_id is None
 
-    new_context = context._replace(sampled=None)
+    new_context = context.copy(update=dict(sampled=None))
     with tracer.join_span(new_context) as span:
         span.name("name")
 
@@ -164,7 +170,9 @@ async def test_create_custom(fake_transport):
         def is_sampled(self, trace_id: str):
             return True
 
-    with mock.patch("aiozipkin.tracer.Tracer") as tracer_stub:  # type: mock.MagicMock
+    with mock.patch(
+        "aiozipkin.tracer.Tracer"
+    ) as tracer_stub:  # type: mock.MagicMock
         await create_custom(endpoint, fake_transport, FakeSampler())
         assert isinstance(tracer_stub.call_args[0][0], StubTransport)
         assert isinstance(tracer_stub.call_args[0][1], FakeSampler)

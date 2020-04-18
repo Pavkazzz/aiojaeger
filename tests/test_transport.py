@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 from aiohttp.client import ClientTimeout
+from async_timeout import timeout
 
 import aiozipkin as az
 import aiozipkin.transport as azt
@@ -11,25 +12,24 @@ import aiozipkin.transport as azt
 async def test_retry(fake_zipkin, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
 
-    tr = azt.Transport(
+    tr = azt.ZipkinTransport(
         fake_zipkin.url,
         send_interval=0.01,
         send_max_size=100,
         send_attempt_count=3,
         send_timeout=ClientTimeout(total=1),
     )
-
     fake_zipkin.next_errors.append("disconnect")
     fake_zipkin.next_errors.append("timeout")
     waiter = fake_zipkin.wait_data(1)
-
     tracer = await az.create_custom(endpoint, tr)
 
     with tracer.new_trace(sampled=True) as span:
         span.name("root_span")
         span.kind(az.CLIENT)
 
-    await waiter
+    async with timeout(10):
+        await waiter
     await tracer.close()
 
     data = fake_zipkin.get_received_data()
@@ -41,7 +41,12 @@ async def test_retry(fake_zipkin, loop):
 async def test_batches(fake_zipkin, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
 
-    tr = azt.Transport(fake_zipkin.url, send_interval=0.01, send_max_size=2, send_timeout=ClientTimeout(total=1),)
+    tr = azt.ZipkinTransport(
+        fake_zipkin.url,
+        send_interval=0.01,
+        send_max_size=2,
+        send_timeout=ClientTimeout(total=1),
+    )
 
     tracer = await az.create_custom(endpoint, tr)
 
@@ -70,7 +75,12 @@ async def test_batches(fake_zipkin, loop):
 async def test_send_full_batch(fake_zipkin, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
 
-    tr = azt.Transport(fake_zipkin.url, send_interval=60, send_max_size=2, send_timeout=ClientTimeout(total=1),)
+    tr = azt.ZipkinTransport(
+        fake_zipkin.url,
+        send_interval=60,
+        send_max_size=2,
+        send_timeout=ClientTimeout(total=1),
+    )
 
     tracer = await az.create_custom(endpoint, tr)
     waiter = fake_zipkin.wait_data(1)
@@ -89,7 +99,8 @@ async def test_send_full_batch(fake_zipkin, loop):
         span.kind(az.CLIENT)
 
     # batch is full here
-    await waiter
+    async with timeout(1):
+        await waiter
     data = fake_zipkin.get_received_data()
     assert len(data) == 1
 
@@ -101,7 +112,7 @@ async def test_send_full_batch(fake_zipkin, loop):
 async def test_lost_spans(fake_zipkin, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
 
-    tr = azt.Transport(
+    tr = azt.ZipkinTransport(
         fake_zipkin.url,
         send_interval=0.01,
         send_max_size=100,

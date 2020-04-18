@@ -1,9 +1,17 @@
-from aiozipkin.helpers import TraceContext, Endpoint
+from aiozipkin.helpers import Endpoint
 from aiozipkin.record import Record
+from aiozipkin.spancontext import DummyTraceContext
 
 
 def test_basic_ctr():
-    context = TraceContext("string", "string", "string", True, True, True)
+    context = DummyTraceContext(
+        trace_id="string",
+        span_id="string",
+        parent_id="string",
+        sampled=True,
+        debug=True,
+        shared=True,
+    )
     local_endpoint = Endpoint("string", "string", "string", 0)
     remote_endpoint = Endpoint("string", "string", "string", 0)
     record = (
@@ -29,9 +37,23 @@ def test_basic_ctr():
         "duration": 1,
         "debug": True,
         "shared": True,
-        "localEndpoint": {"serviceName": "string", "ipv4": "string", "ipv6": "string", "port": 0,},
-        "remoteEndpoint": {"serviceName": "string", "ipv4": "string", "ipv6": "string", "port": 0,},
+        "localEndpoint": {
+            "serviceName": "string",
+            "ipv4": "string",
+            "ipv6": "string",
+            "port": 0,
+        },
+        "remoteEndpoint": {
+            "serviceName": "string",
+            "ipv4": "string",
+            "ipv6": "string",
+            "port": 0,
+        },
         "annotations": [{"timestamp": 0, "value": "string"}],
-        "tags": {"additionalProp1": "string", "additionalProp2": "string", "additionalProp3": "string",},
+        "tags": {
+            "additionalProp1": "string",
+            "additionalProp2": "string",
+            "additionalProp3": "string",
+        },
     }
     assert dict_record == expected

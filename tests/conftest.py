@@ -6,10 +6,11 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
 
-from aiozipkin.helpers import create_endpoint, TraceContext
+from aiozipkin.helpers import create_endpoint
 from aiozipkin.sampler import Sampler
+from aiozipkin.spancontext import DummyTraceContext
 from aiozipkin.tracer import Tracer
-from aiozipkin.transport import StubTransport
+from aiozipkin.transport import StubZipkinTransport
 
 
 @pytest.fixture(scope="session")
@@ -28,8 +29,7 @@ def loop(event_loop):
 
 @pytest.fixture
 def fake_transport():
-    transport = StubTransport()
-    return transport
+    return StubZipkinTransport()
 
 
 @pytest.fixture(name="tracer")
@@ -42,7 +42,7 @@ def tracer_fixture(fake_transport):
 
 @pytest.fixture
 def context():
-    context = TraceContext(
+    context = DummyTraceContext(
         trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
         parent_id=None,
         span_id="41baf1be2fb9bfc5",
@@ -81,7 +81,7 @@ class FakeZipkin:
                 request.transport.close()
                 await asyncio.sleep(1)
             elif err == "timeout":
-                await asyncio.sleep(60)
+                await asyncio.sleep(5)
             return web.HTTPInternalServerError()
 
         data = await request.json()

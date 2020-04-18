@@ -1,22 +1,25 @@
 import abc
 from random import Random
+from typing import Union
 
 from .mypy_types import OptInt
 
 
 class SamplerABC(abc.ABC):
     @abc.abstractmethod
-    def is_sampled(self, trace_id: str) -> bool:  # pragma: no cover
+    def is_sampled(self, trace_id: Union[int, str]) -> bool:
         """Defines if given trace should be recorded for further actions."""
         pass
 
 
 class Sampler(SamplerABC):
-    def __init__(self, *, sample_rate: float = 1.0, seed: OptInt = None) -> None:
+    def __init__(
+        self, *, sample_rate: float = 1.0, seed: OptInt = None
+    ) -> None:
         self._sample_rate = sample_rate
         self._rng = Random(seed)
 
-    def is_sampled(self, trace_id: str) -> bool:
+    def is_sampled(self, trace_id: Union[int, str]) -> bool:
         if self._sample_rate == 0.0:
             sampled = False
         else:

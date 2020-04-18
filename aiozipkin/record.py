@@ -1,13 +1,8 @@
-from typing import TypeVar, Dict, Any, List, NamedTuple, Optional
+from typing import Any, Dict, List, NamedTuple, Optional, TypeVar
 
-from .helpers import (
-    CONSUMER,
-    PRODUCER,
-    Endpoint,
-    TraceContext,
-    filter_none,
-)
+from .helpers import Endpoint, filter_none
 from .mypy_types import OptInt, OptStr  # flake8: noqa
+from .spancontext import CONSUMER, PRODUCER, BaseTraceContext
 
 Annotation = NamedTuple("Annotation", [("value", str), ("timestamp", int)])
 
@@ -20,7 +15,9 @@ T = TypeVar("T", bound="Record")
 
 
 class Record:
-    def __init__(self: T, context: TraceContext, local_endpoint: Endpoint) -> None:
+    def __init__(
+        self: T, context: BaseTraceContext, local_endpoint: Endpoint
+    ) -> None:
         self._context = context
         self._local_endpoint = _endpoint_asdict(local_endpoint)
         self._finished = False
@@ -34,7 +31,7 @@ class Record:
         self._tags: Dict[str, str] = {}
 
     @property
-    def context(self) -> TraceContext:
+    def context(self) -> BaseTraceContext:
         return self._context
 
     def start(self: T, ts: int) -> T:

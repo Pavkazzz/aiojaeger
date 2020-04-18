@@ -1,0 +1,3 @@
+[submodule "aiozipkin/jaeger-idl"]
+	path = aiozipkin/jaeger-idl
+	url = git@github.com:jaegertracing/jaeger-idl.git

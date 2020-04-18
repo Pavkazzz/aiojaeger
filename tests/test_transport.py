@@ -4,8 +4,8 @@ import pytest
 from aiohttp.client import ClientTimeout
 from async_timeout import timeout
 
-import aiozipkin as az
-import aiozipkin.transport as azt
+import aiojaeger as az
+import aiojaeger.transport as azt
 
 
 @pytest.mark.asyncio

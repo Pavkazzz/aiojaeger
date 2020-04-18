@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 service_c_api = "http://127.0.0.1:9003/api/v1/data"
 service_d_api = "http://127.0.0.1:9004/api/v1/data"

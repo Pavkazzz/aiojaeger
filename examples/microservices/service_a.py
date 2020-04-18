@@ -6,7 +6,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 service_b_api = "http://127.0.0.1:9002/api/v1/data"
 service_e_api = "http://127.0.0.1:9005/api/v1/data"

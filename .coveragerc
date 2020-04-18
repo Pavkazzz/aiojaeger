@@ -1,4 +1,4 @@
 [run]
 branch = True
-source = aiozipkin
+source = aiojaeger
 omit = site-packages, .tox

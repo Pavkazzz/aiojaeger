@@ -1,8 +1,8 @@
 from typing import Optional, Tuple
 
-from aiozipkin.mypy_types import Headers
-from aiozipkin.spancontext import BaseTraceContext
-from aiozipkin.version import __version__
+from aiojaeger.mypy_types import Headers
+from aiojaeger.spancontext import BaseTraceContext
+from aiojaeger.version import __version__
 
 
 class JaegerConst:

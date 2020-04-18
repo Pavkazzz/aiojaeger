@@ -1,6 +1,6 @@
 import asyncio
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 async def run():

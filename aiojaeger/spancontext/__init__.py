@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from aiozipkin.mypy_types import Headers, OptBool, OptStr
+from aiojaeger.mypy_types import Headers, OptBool, OptStr
 
 CLIENT = "CLIENT"
 SERVER = "SERVER"

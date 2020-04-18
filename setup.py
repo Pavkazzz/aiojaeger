@@ -5,7 +5,7 @@ import sys
 from setuptools import find_packages, setup
 
 if sys.version_info < (3, 7, 0):
-    raise RuntimeError("aiozipkin does not support Python earlier than 3.7.0")
+    raise RuntimeError("aiojaeger does not support Python earlier than 3.7.0")
 
 
 def read(f):
@@ -15,14 +15,14 @@ def read(f):
 def read_version():
     regexp = re.compile(r"^__version__\W*=\W*\"([\d].+)\"")
     init_py = os.path.join(os.path.dirname(__file__),
-                           "aiozipkin", "version.py")
+                           "aiojaeger", "version.py")
     with open(init_py) as f:
         for line in f:
             match = regexp.match(line)
             if match is not None:
                 return match.group(1)
         else:
-            msg = "Cannot find version in aiozipkin/version.py"
+            msg = "Cannot find version in aiojaeger/version.py"
             raise RuntimeError(msg)
 
 
@@ -41,7 +41,7 @@ classifiers = [
 ]
 
 setup(
-    name="aiozipkin",
+    name="aiojaeger",
     version=read_version(),
     description=(
         "Distributed tracing instrumentation"
@@ -52,8 +52,8 @@ setup(
     platforms=["POSIX"],
     author="Pavel Mosein",
     author_email="pavel-mosein@yandex.ru",
-    url="https://github.com/pavkazzz/aiozipkin",
-    download_url="https://pypi.python.org/pypi/aiozipkin",
+    url="https://github.com/pavkazzz/aiojaeger",
+    download_url="https://pypi.python.org/pypi/aiojaeger",
     license="Apache 2",
     packages=find_packages(),
     install_requires=install_requires,

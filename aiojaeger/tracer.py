@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING  # noqa
 from typing import Any, AsyncContextManager, Awaitable, Dict, Optional
 
-from aiozipkin.context_managers import _ContextManager
+from aiojaeger.context_managers import _ContextManager
 
 from .helpers import Endpoint
 from .mypy_types import Headers, OptBool

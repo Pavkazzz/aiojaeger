@@ -29,15 +29,15 @@ from aiohttp.web import (
 )
 from aiohttp.web_urldispatcher import AbstractRoute
 
-from aiozipkin.constants import (
+from aiojaeger.constants import (
     HTTP_METHOD,
     HTTP_PATH,
     HTTP_ROUTE,
     HTTP_STATUS_CODE,
 )
-from aiozipkin.span import SpanAbc
-from aiozipkin.spancontext import CLIENT, SERVER, BaseTraceContext
-from aiozipkin.tracer import Tracer
+from aiojaeger.span import SpanAbc
+from aiojaeger.spancontext import CLIENT, SERVER, BaseTraceContext
+from aiojaeger.tracer import Tracer
 
 APP_AIOZIPKIN_KEY = "aiozipkin_tracer"
 REQUEST_AIOZIPKIN_KEY = "aiozipkin_span"

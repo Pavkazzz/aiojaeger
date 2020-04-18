@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, NamedTuple, Optional
 
-from aiozipkin.mypy_types import OptInt, OptStr, OptTs
+from aiojaeger.mypy_types import OptInt, OptStr, OptTs
 
 Endpoint = NamedTuple(
     "Endpoint",

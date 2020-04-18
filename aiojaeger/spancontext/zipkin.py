@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from aiozipkin.mypy_types import Headers, OptBool, OptStr
-from aiozipkin.spancontext import BaseTraceContext
+from aiojaeger.mypy_types import Headers, OptBool, OptStr
+from aiojaeger.spancontext import BaseTraceContext
 
 
 class ZipkinConst:

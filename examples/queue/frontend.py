@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 page = """
 <html lang="en">

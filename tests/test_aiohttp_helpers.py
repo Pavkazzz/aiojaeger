@@ -6,8 +6,8 @@ from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
 from aiohttp.web_exceptions import HTTPException, HTTPNotFound
 
-import aiozipkin as az
-from aiozipkin import middleware_maker
+import aiojaeger as az
+from aiojaeger import middleware_maker
 
 
 def test_basic_setup(tracer):
@@ -103,7 +103,7 @@ async def test_middleware_with_valid_ip(
     )
 
     middleware = middleware_maker()
-    with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:
+    with patch("aiojaeger.span.Span.remote_endpoint") as mocked_remote_ep:
         await middleware(req, handler)
 
         assert mocked_remote_ep.call_count == 1
@@ -142,7 +142,7 @@ async def test_middleware_with_invalid_ip(tracer, version, address):
     )
 
     middleware = middleware_maker()
-    with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:
+    with patch("aiojaeger.span.Span.remote_endpoint") as mocked_remote_ep:
         await middleware(req, handler)
         assert mocked_remote_ep.call_count == 0
 

@@ -1,5 +1,12 @@
-from typing import Type, TYPE_CHECKING  # noqa
-from typing import Any, AsyncContextManager, Awaitable, Dict, Optional
+from typing import (  # noqa
+    TYPE_CHECKING,
+    Any,
+    AsyncContextManager,
+    Awaitable,
+    Dict,
+    Optional,
+    Type,
+)
 
 from aiojaeger.context_managers import _ContextManager
 
@@ -119,8 +126,17 @@ class Tracer(_Base):
     def make_context(self, headers: Headers) -> Optional[BaseTraceContext]:
         return self.context.make_context(headers)
 
-    def make_headers(self, context: BaseTraceContext):
+    def make_headers(self, context: BaseTraceContext) -> Headers:
         return self.context.make_headers(context)
+
+    def get_span(self, headers: Headers) -> SpanAbc:
+        # builds span from incoming request, if no context found, create
+        # new span
+        context = self.make_context(headers)
+
+        if context is None:
+            return self.new_trace()
+        return self.join_span(context)
 
 
 def create_zipkin(

@@ -88,5 +88,5 @@ class Record:
         return filter_none(rec, ["kind"])
 
     @property
-    def entrypoint_servicename(self):
+    def entrypoint_servicename(self) -> str:
         return self._local_endpoint["serviceName"]

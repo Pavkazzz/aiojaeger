@@ -21,6 +21,7 @@ from aiohttp import hdrs
 from aiohttp.client_exceptions import ClientError, ClientResponseError
 from thriftpy2.protocol import TBinaryProtocolFactory
 
+import aiojaeger
 from .record import Record
 from .spancontext import BaseTraceContext, DummyTraceContext
 from .spancontext.jaeger import JaegerTraceContext
@@ -32,7 +33,6 @@ try:
     from thriftpy2.transport import TCyMemoryBuffer as TMemoryBuffer
 except ImportError:
     from thriftpy2.transport import TMemoryBuffer
-import aiojaeger
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +68,6 @@ class TransportABC(abc.ABC):
     def span_context(self) -> Type[BaseTraceContext]:
         pass
 
-    def endpoint(self, local_endpoint):
-        pass
-
 
 class StubTransport(TransportABC):
     """Dummy transport, which logs spans to a limited queue."""
@@ -85,7 +82,8 @@ class StubTransport(TransportABC):
     async def close(self) -> None:
         pass
 
-    def gen(self) -> str: return ""
+    def gen(self) -> str:
+        return ""
 
     generate_trace_id = gen
     generate_span_id = gen

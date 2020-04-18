@@ -8,6 +8,7 @@ from aiojaeger.helpers.aiohttp import (
     setup,
 )
 from aiojaeger.spancontext import CLIENT, CONSUMER, PRODUCER, SERVER
+
 from .constants import (
     HTTP_HOST,
     HTTP_METHOD,
@@ -20,7 +21,7 @@ from .constants import (
 )
 from .helpers import create_endpoint
 from .sampler import Sampler
-from .tracer import create_custom, create_jaeger, create_zipkin, Tracer
+from .tracer import Tracer, create_custom, create_jaeger, create_zipkin
 
 __all__ = (
     "Tracer",

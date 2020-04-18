@@ -1,7 +1,7 @@
 import aiohttp
 import pytest
 from aiohttp import web
-from async_generator import yield_, async_generator
+from async_generator import async_generator, yield_
 
 import aiozipkin as az
 
@@ -85,14 +85,14 @@ async def test_client_signals(tracer, fake_transport):
         resp = await session.get(url, trace_request_ctx=ctx)
         data = await resp.read()
         assert len(data) > 0
-        assert az.make_context(resp.request_info.headers) is None
+        assert tracer.make_context(resp.request_info.headers) is None
 
         # by default headers added
         ctx = {"span_context": span.context}
         resp = await session.get(url, trace_request_ctx=ctx)
         await resp.text()
         assert len(data) > 0
-        context = az.make_context(resp.request_info.headers)
+        context = tracer.make_context(resp.request_info.headers)
         assert context.trace_id == span.context.trace_id
 
     await session.close()

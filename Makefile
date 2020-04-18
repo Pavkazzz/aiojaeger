@@ -22,7 +22,7 @@ pyroma:
 	pyroma -d .
 
 mypy:
-	mypy aiozipkin --ignore-missing-imports --disallow-untyped-calls --no-site-packages --strict
+	mypy aiozipkin
 
 testloop:
 	while true ; do \
@@ -74,5 +74,8 @@ develop:
 	pip install -r requirements-dev.txt
 	pip install -r requirements-doc.txt
 
+black:
+	isort -rc aiozipkin tests
+	black aiozipkin tests -l 79
 
 .PHONY: all flake test vtest cov clean doc ci

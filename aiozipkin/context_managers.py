@@ -1,15 +1,15 @@
 from collections.abc import Awaitable as AbcAwaitable
 from types import TracebackType
 from typing import (
-    TypeVar,
-    Optional,
-    Generator,
+    TYPE_CHECKING,
     Any,
-    Type,
-    Generic,
     AsyncContextManager,
     Awaitable,
-    TYPE_CHECKING,
+    Generator,
+    Generic,
+    Optional,
+    Type,
+    TypeVar,
 )
 
 T = TypeVar("T", bound=AsyncContextManager["T"])  # type: ignore
@@ -43,7 +43,10 @@ class _ContextManager(_Base[T]):
         return t
 
     async def __aexit__(
-        self, exc_type: Optional[Type[BaseException]], exc: Optional[BaseException], tb: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[TracebackType],
     ) -> Optional[bool]:
         if self._obj is None:
             raise RuntimeError("__aexit__ called before __aenter__")

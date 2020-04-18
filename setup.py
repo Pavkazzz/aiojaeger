@@ -12,7 +12,7 @@ def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
 
-install_requires = ["aiohttp<4"]
+install_requires = ["aiohttp<4", "thriftpy2~=0.4.11", "pydantic~=1.4"]
 extras_require = {}
 
 

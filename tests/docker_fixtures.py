@@ -3,12 +3,15 @@ import asyncio
 import aiohttp
 import pytest
 from aiodocker import Docker
-from async_generator import yield_, async_generator
+from async_generator import async_generator, yield_
 
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--no-pull", action="store_true", default=False, help=("Force docker pull"),
+        "--no-pull",
+        action="store_true",
+        default=False,
+        help=("Force docker pull"),
     )
 
 
@@ -18,10 +21,9 @@ def docker_pull(request):
 
 
 @pytest.fixture(scope="session")
-@async_generator
 async def docker():
     client = Docker()
-    await yield_(client)
+    yield client
     await client.close()
 
 
@@ -55,7 +57,12 @@ async def zipkin_server(docker, docker_pull):
 
     container = await docker.containers.create_or_replace(
         name="zipkin-server-{tag}".format(tag=tag),
-        config={"Image": image, "AttachStdout": False, "AttachStderr": False, "HostConfig": {"PublishAllPorts": True},},
+        config={
+            "Image": image,
+            "AttachStdout": False,
+            "AttachStderr": False,
+            "HostConfig": {"PublishAllPorts": True},
+        },
     )
     await container.start()
     port = (await container.port(9411))[0]["HostPort"]
@@ -78,14 +85,13 @@ def zipkin_url(zipkin_server):
 
 
 @pytest.fixture(scope="session")
-@async_generator
 async def jaeger_server(docker, docker_pull):
     # docker run -d -e COLLECTOR_ZIPKIN_HTTP_PORT=9411 \
     # -p5775:5775/udp -p6831:6831/udp -p6832:6832/udp \
     # -p5778:5778 -p16686:16686 -p14268:14268
     # -p9411:9411 jaegertracing/all-in-one:latest
 
-    tag = "1.0.0"
+    tag = "1.17.1"
     image = "jaegertracing/all-in-one:{}".format(tag)
     host = "127.0.0.1"
 
@@ -100,28 +106,23 @@ async def jaeger_server(docker, docker_pull):
             "AttachStdout": False,
             "AttachStderr": False,
             "HostConfig": {"PublishAllPorts": True},
-            "Env": ["COLLECTOR_ZIPKIN_HTTP_PORT=9411"],
-            "ExposedPorts": {
-                "14268/tcp": {},
-                "16686/tcp": {},
-                "5775/udp": {},
-                "5778/tcp": {},
-                "6831/udp": {},
-                "6832/udp": {},
-                "9411/tcp": {},
-            },
+            "ExposedPorts": {"14268/tcp": {}, "16686/tcp": {},},
         },
     )
     await container.start()
 
-    zipkin_port = (await container.port(9411))[0]["HostPort"]
-    jaeger_port = (await container.port(16686))[0]["HostPort"]
-    params = dict(host=host, zipkin_port=zipkin_port, jaeger_port=jaeger_port)
+    jaeger_trace_port = (await container.port(14268))[0]["HostPort"]
+    jaeger_api_port = (await container.port(16686))[0]["HostPort"]
+    params = dict(
+        host=host,
+        jaeger_trace_port=jaeger_trace_port,
+        jaeger_api_port=jaeger_api_port,
+    )
 
-    url = "http://{}:{}".format(host, zipkin_port)
+    url = "http://{}:{}".format(host, jaeger_trace_port)
     await wait_for_response(url)
 
-    await yield_(params)
+    yield params
 
     await container.kill()
     await container.delete(force=True)
@@ -129,10 +130,10 @@ async def jaeger_server(docker, docker_pull):
 
 @pytest.fixture
 def jaeger_url(jaeger_server):
-    url = "http://{host}:{zipkin_port}/api/v2/spans".format(**jaeger_server)
-    return url
+    template = "http://{host}:{jaeger_trace_port}/api/traces"
+    return template.format(**jaeger_server)
 
 
 @pytest.fixture
 def jaeger_api_url(jaeger_server):
-    return "http://{host}:{jaeger_port}".format(**jaeger_server)
+    return "http://{host}:{jaeger_api_port}".format(**jaeger_server)

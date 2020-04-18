@@ -1,6 +1,12 @@
 import binascii
 import os
+import random
 import struct
+import time
+
+from aiozipkin.spancontext.jaeger import JaegerConst
+
+rand = random.Random(time.time() * (os.getpid() or 1))
 
 
 # https://github.com/Yelp/py_zipkin/blob/
@@ -54,3 +60,7 @@ def signed_int_to_unsigned_hex(signed_int: int) -> str:
     if hex_string.endswith("L"):
         return hex_string[:-1]
     return hex_string
+
+
+def random_id(bitsize: int = JaegerConst._max_id_bits) -> int:
+    return rand.getrandbits(bitsize - 1)

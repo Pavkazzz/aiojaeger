@@ -1,13 +1,13 @@
 import asyncio
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
-from aiohttp.web_exceptions import HTTPNotFound, HTTPException
+from aiohttp.web_exceptions import HTTPException, HTTPNotFound
 
 import aiozipkin as az
-from aiozipkin.aiohttp_helpers import middleware_maker
+from aiozipkin import middleware_maker
 
 
 def test_basic_setup(tracer):
@@ -40,7 +40,7 @@ async def test_middleware_with_default_transport(tracer, fake_transport):
     assert rec.asdict()["tags"][az.HTTP_ROUTE] == "/{pid}"
 
     # noop span does not produce records
-    headers = {"X-B3-Sampled": "0"}
+    headers = {"b3": "1-2-0"}
     req_noop = make_mocked_request("GET", "/", headers=headers, app=app)
     await middleware(req_noop, handler)
     span = az.request_span(req_noop)
@@ -82,7 +82,9 @@ valid_ips = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("version,address_in,address_out", valid_ips)
-async def test_middleware_with_valid_ip(tracer, version, address_in, address_out):
+async def test_middleware_with_valid_ip(
+    tracer, version, address_in, address_out
+):
     if address_out is None:
         address_out = address_in
 
@@ -96,7 +98,9 @@ async def test_middleware_with_valid_ip(tracer, version, address_in, address_out
     async def handler(request):
         return web.Response(body=b"data")
 
-    req = make_mocked_request("GET", "/", headers={"token": "x"}, transport=transp, app=app)
+    req = make_mocked_request(
+        "GET", "/", headers={"token": "x"}, transport=transp, app=app
+    )
 
     middleware = middleware_maker()
     with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:
@@ -133,7 +137,9 @@ async def test_middleware_with_invalid_ip(tracer, version, address):
     async def handler(request):
         return web.Response(body=b"data")
 
-    req = make_mocked_request("GET", "/", headers={"token": "x"}, transport=transp, app=app)
+    req = make_mocked_request(
+        "GET", "/", headers={"token": "x"}, transport=transp, app=app
+    )
 
     middleware = middleware_maker()
     with patch("aiozipkin.span.Span.remote_endpoint") as mocked_remote_ep:

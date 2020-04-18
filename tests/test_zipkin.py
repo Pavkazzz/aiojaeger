@@ -25,7 +25,9 @@ async def _retry_zipkin_client(url, client, retries=5, backoff_time=1):
 async def test_basic(zipkin_url, client, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
     interval = 50
-    tracer = await az.create(zipkin_url, endpoint, sample_rate=1.0, send_interval=interval)
+    tracer = await az.create_zipkin(
+        zipkin_url, endpoint, sample_rate=1.0, send_interval=interval
+    )
 
     with tracer.new_trace(sampled=True) as span:
         span.name("root_span")
@@ -47,7 +49,9 @@ async def test_basic(zipkin_url, client, loop):
 async def test_basic_context_manager(zipkin_url, client, loop):
     endpoint = az.create_endpoint("simple_service", ipv4="127.0.0.1", port=80)
     interval = 50
-    async with az.create(zipkin_url, endpoint, sample_rate=1.0, send_interval=interval) as tracer:
+    async with az.create_zipkin(
+        zipkin_url, endpoint, sample_rate=1.0, send_interval=interval
+    ) as tracer:
         with tracer.new_trace(sampled=True) as span:
             span.name("root_span")
             await asyncio.sleep(0.1)
@@ -63,7 +67,9 @@ async def test_basic_context_manager(zipkin_url, client, loop):
 async def test_exception_in_span(zipkin_url, client, loop):
     endpoint = az.create_endpoint("error_service", ipv4="127.0.0.1", port=80)
     interval = 50
-    async with az.create(zipkin_url, endpoint, send_interval=interval) as tracer:
+    async with az.create_zipkin(
+        zipkin_url, endpoint, send_interval=interval
+    ) as tracer:
 
         def func(span):
             with span:
@@ -76,7 +82,9 @@ async def test_exception_in_span(zipkin_url, client, loop):
 
     url = URL(zipkin_url).with_path("/zipkin/api/v2/traces")
     data = await _retry_zipkin_client(url, client)
-    assert any({"error": "foo"} == s.get("tags", {}) for trace in data for s in trace)
+    assert any(
+        {"error": "foo"} == s.get("tags", {}) for trace in data for s in trace
+    )
 
 
 @pytest.mark.asyncio
@@ -84,7 +92,9 @@ async def test_zipkin_error(client, loop, caplog):
     endpoint = az.create_endpoint("error_service", ipv4="127.0.0.1", port=80)
     interval = 50
     zipkin_url = "https://httpbin.org/status/404"
-    async with az.create(zipkin_url, endpoint, sample_rate=1.0, send_interval=interval,) as tracer:
+    async with az.create_zipkin(
+        zipkin_url, endpoint, sample_rate=1.0, send_interval=interval,
+    ) as tracer:
         with tracer.new_trace(sampled=True) as span:
             span.kind(az.CLIENT)
             await asyncio.sleep(0.0)
@@ -102,7 +112,9 @@ async def test_leak_in_transport(zipkin_url, client, loop):
     tracemalloc.start()
 
     endpoint = az.create_endpoint("simple_service")
-    tracer = await az.create(zipkin_url, endpoint, sample_rate=1, send_interval=0.0001)
+    tracer = await az.create_zipkin(
+        zipkin_url, endpoint, sample_rate=1, send_interval=0.0001
+    )
 
     await asyncio.sleep(1)
     gc.collect()

@@ -155,11 +155,11 @@ class ZipkinConst:
 
 class ZipkinTraceContext(BaseTraceContext):
     @classmethod
-    def make_context(cls, headers: Headers):
+    def make_context(cls, headers: Headers) -> Optional[BaseTraceContext]:
         return ZipkinConst.make_context(headers)
 
     def make_headers(self) -> Headers:
         return ZipkinConst.make_headers(self)
 
-    def make_single_header(self):
+    def make_single_header(self) -> Headers:
         return ZipkinConst.make_single_header(self)

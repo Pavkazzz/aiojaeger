@@ -21,8 +21,7 @@ async def test_basic(jaeger_server, jaeger_url, jaeger_api_url, client, loop):
     # close forced sending data to server regardless of send interval
     await tracer.close()
 
-    # convert to hex
-    trace_id = "%0.2x" % int(span.context.trace_id)
+    trace_id = int(span.context.trace_id).to_bytes(8, byteorder="big").hex()
     url = URL(jaeger_api_url) / "api" / "traces" / trace_id
     resp = await client.get(url, headers={"Content-Type": "application/json"})
     assert resp.status == 200

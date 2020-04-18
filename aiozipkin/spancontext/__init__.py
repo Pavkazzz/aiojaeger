@@ -1,5 +1,6 @@
 # possible span kinds
 import abc
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -23,9 +24,8 @@ class BaseTraceContext(BaseModel):
     debug: bool
     shared: bool
 
-    @classmethod
     @abc.abstractmethod
-    def make_headers(cls) -> Headers:
+    def make_headers(self) -> Headers:
         """Creates dict with zipkin headers from available context.
 
         Resulting dict should be passed to HTTP client  propagate contest
@@ -35,7 +35,7 @@ class BaseTraceContext(BaseModel):
 
     @classmethod
     @abc.abstractmethod
-    def make_context(cls, headers: Headers):
+    def make_context(cls, headers: Headers) -> Optional["BaseTraceContext"]:
         pass
 
 
@@ -45,7 +45,9 @@ class DummyTraceContext(BaseTraceContext):
         return {}
 
     @classmethod
-    def make_context(cls, headers: Headers, sampled=True):
+    def make_context(
+        cls, headers: Headers, sampled: bool = True
+    ) -> BaseTraceContext:
         return cls(
             trace_id="dummy-trace-id",
             span_id="dummy-span-id",

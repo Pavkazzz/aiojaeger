@@ -8,6 +8,7 @@ from typing import (  # noqa
     Callable,
     Dict,
     Generator,
+    List,
     Optional,
     Set,
     cast,
@@ -52,7 +53,7 @@ __all__ = (
 )
 
 Handler = Callable[[Request], Awaitable[Response]]
-Middleware = Callable[[Application, Handler], Awaitable[Handler]]
+Middleware = Callable[[Request, Handler], Awaitable[Response]]
 OptTraceVar = ContextVar[Optional[BaseTraceContext]]
 
 zipkin_context: OptTraceVar = ContextVar("zipkin_context", default=None)
@@ -116,7 +117,7 @@ def set_context_value(
 
 
 def middleware_maker(
-    skip_routes: Optional[AbstractRoute] = None,
+    skip_routes: Optional[List[AbstractRoute]] = None,
     tracer_key: str = APP_AIOZIPKIN_KEY,
     request_key: str = REQUEST_AIOZIPKIN_KEY,
     match_path: str = "/",
@@ -165,7 +166,7 @@ def setup(
     app: Application,
     tracer: Tracer,
     *,
-    skip_routes: Optional[AbstractRoute] = None,
+    skip_routes: Optional[List[AbstractRoute]] = None,
     tracer_key: str = APP_AIOZIPKIN_KEY,
     request_key: str = REQUEST_AIOZIPKIN_KEY,
     match_path: str = "/",
@@ -183,7 +184,7 @@ def setup(
         request_key=request_key,
         match_path=match_path,
     )
-    app.middlewares.append(m)
+    app.middlewares.append(m)  # type: ignore
 
     # register cleanup signal to close zipkin transport connections
     async def close_aiozipkin(app: Application) -> None:
@@ -300,7 +301,7 @@ def make_trace_config(tracer: Tracer) -> aiohttp.TraceConfig:
     trace_config = aiohttp.TraceConfig()
     zipkin = ZipkinClientSignals(tracer)
 
-    trace_config.on_request_start.append(zipkin.on_request_start)
-    trace_config.on_request_end.append(zipkin.on_request_end)
-    trace_config.on_request_exception.append(zipkin.on_request_exception)
+    trace_config.on_request_start.append(zipkin.on_request_start)  # type: ignore
+    trace_config.on_request_end.append(zipkin.on_request_end)  # type: ignore
+    trace_config.on_request_exception.append(zipkin.on_request_exception)  # type: ignore
     return trace_config

@@ -82,10 +82,11 @@ class Tracer(_Base):
     ) -> BaseTraceContext:
         span_id = self._transport.generate_span_id()
         if context is not None:
-            new_context = context
-            new_context.span_id = span_id
-            new_context.parent_id = context.span_id
-            new_context.shared = False
+            new_context = context.copy(
+                update=dict(
+                    span_id=span_id, parent_id=context.span_id, shared=False
+                )
+            )
             return new_context
 
         trace_id = self._transport.generate_trace_id()
@@ -111,7 +112,7 @@ class Tracer(_Base):
     async def __aexit__(self, *args: Any) -> None:
         await self.close()
 
-    def make_context(self, headers: Headers):
+    def make_context(self, headers: Headers) -> Optional[BaseTraceContext]:
         return self._transport.span_context.make_context(headers)
 
 

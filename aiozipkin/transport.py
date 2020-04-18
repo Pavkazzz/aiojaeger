@@ -6,6 +6,7 @@ from typing import (  # flake8: noqa
     Any,
     Awaitable,
     Callable,
+    Coroutine,
     Deque,
     Dict,
     List,
@@ -41,7 +42,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=5 * 60)
 BATCHES_MAX_COUNT = 10 ** 4
 
-DataList = List[Dict[str, Any]]
+DataList = List[Record]
 SndBatches = Deque[Tuple[int, DataList]]
 SendDataCoro = Callable[[DataList], Awaitable[bool]]
 

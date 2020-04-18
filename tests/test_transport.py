@@ -1,5 +1,4 @@
 import asyncio
-from typing import Type
 
 import pytest
 from aiohttp.client import ClientTimeout

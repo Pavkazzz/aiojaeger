@@ -19,7 +19,7 @@ class JaegerConst:
     DEFAULT_FLUSH_INTERVAL = 1
 
     # Name of the HTTP header used to encode trace ID
-    TRACE_ID_HEADER = b"uber-trace-id"
+    TRACE_ID_HEADER = "uber-trace-id"
 
     # Prefix for HTTP headers used to record baggage items
     BAGGAGE_HEADER_PREFIX = b"uberctx-"
@@ -103,7 +103,7 @@ class JaegerConst:
 
         # TODO: baggage keys
         headers = {
-            cls.TRACE_ID_HEADER.decode(): cls.make_trace_id(context),
+            cls.TRACE_ID_HEADER: cls.make_trace_id(context),
         }
         return headers
 
@@ -133,7 +133,7 @@ class JaegerConst:
 
 class JaegerTraceContext(BaseTraceContext):
     @classmethod
-    def make_context(cls, headers: Headers):
+    def make_context(cls, headers: Headers) -> BaseTraceContext:
         return JaegerTraceContext.make_context(headers)
 
     def make_headers(self) -> Headers:

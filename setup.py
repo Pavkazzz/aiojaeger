@@ -11,17 +11,18 @@ if sys.version_info < (3, 7, 0):
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
+
 def read_version():
-    regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
+    regexp = re.compile(r"^__version__\W*=\W*\"([\d].+)\"")
     init_py = os.path.join(os.path.dirname(__file__),
-                           'aiozipkin', 'version.py')
+                           "aiozipkin", "version.py")
     with open(init_py) as f:
         for line in f:
             match = regexp.match(line)
             if match is not None:
                 return match.group(1)
         else:
-            msg = 'Cannot find version in aiozipkin/version.py'
+            msg = "Cannot find version in aiozipkin/version.py"
             raise RuntimeError(msg)
 
 

@@ -1,13 +1,13 @@
-.. aiozipkin documentation master file, created by
+.. aiojaeger documentation master file, created by
    sphinx-quickstart on Sun Dec 11 17:08:38 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-aiozipkin's documentation!
+aiojaeger's documentation!
 ===========================
 
 
-**aiozipkin** is Python 3.5+ module that adds distributed tracing capabilities
+**aiojaeger** is Python 3.5+ module that adds distributed tracing capabilities
 for asyncio_ applications with zipkin (http://zipkin.io) server instrumentation.
 
 zipkin_ is a distributed tracing system. It helps gather timing data needed
@@ -15,14 +15,14 @@ to troubleshoot latency problems in microservice architectures. It manages
 both the collection and lookup of this data. Zipkin’s design is based on
 the Google Dapper paper.
 
-Applications instrumented with **aiozipkin** report timing data to zipkin_.
+Applications instrumented with **aiojaeger** report timing data to zipkin_.
 The Zipkin UI also presents a Dependency diagram showing how many traced
 requests went through each application. If you are troubleshooting latency
 problems or errors, you can filter or sort all traces based on the
 application, length of trace, annotation, or timestamp.
 
 
-.. image:: https://raw.githubusercontent.com/aio-libs/aiozipkin/master/docs/zipkin_animation2.gif
+.. image:: https://raw.githubusercontent.com/aio-libs/aiojaeger/master/docs/zipkin_animation2.gif
     :alt: zipkin ui animation
 
 

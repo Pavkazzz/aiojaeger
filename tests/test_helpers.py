@@ -2,8 +2,8 @@ import time
 
 import pytest
 
-from aiozipkin.helpers import filter_none, make_timestamp
-from aiozipkin.spancontext.zipkin import ZipkinConst, ZipkinTraceContext
+from aiojaeger.helpers import filter_none, make_timestamp
+from aiojaeger.spancontext.zipkin import ZipkinConst, ZipkinTraceContext
 
 
 @pytest.fixture

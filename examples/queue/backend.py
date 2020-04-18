@@ -3,7 +3,7 @@ import asyncio
 import aiojobs.aiohttp
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 async def consume_message(message, tracer):

@@ -1,4 +1,4 @@
-from aiozipkin.sampler import Sampler
+from aiojaeger.sampler import Sampler
 
 
 def test_sample_always():

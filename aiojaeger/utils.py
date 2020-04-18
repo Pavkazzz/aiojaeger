@@ -4,7 +4,7 @@ import random
 import struct
 import time
 
-from aiozipkin.spancontext.jaeger import JaegerConst
+from aiojaeger.spancontext.jaeger import JaegerConst
 
 rand = random.Random(time.time() * (os.getpid() or 1))
 

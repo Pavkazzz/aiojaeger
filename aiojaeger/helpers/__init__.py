@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, NamedTuple, Optional
 
-from aiozipkin.mypy_types import OptInt, OptStr, OptTs
+from aiojaeger.mypy_types import OptInt, OptStr, OptTs
 
 Endpoint = NamedTuple(
     "Endpoint",
@@ -27,7 +27,7 @@ def create_endpoint(
 
 
 def make_timestamp(ts: OptTs = None) -> int:
-    """Create zipkin timestamp in microseconds, or convert available one
+    """Create timestamp in microseconds, or convert available one
     from second. Useful when user supplies ts from time.time() call.
     """
     ts = ts if ts is not None else time.time()

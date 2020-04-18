@@ -4,8 +4,8 @@ API
 Core API Reference
 ------------------
 
-.. module:: aiozipkin
-.. currentmodule:: aiozipkin
+.. module:: aiojaeger
+.. currentmodule:: aiojaeger
 
 
 .. data:: CLIENT
@@ -102,43 +102,43 @@ middleware that starts span on beginning of request and closes it on finish,
 saving important metadata, like route, status code etc.
 
 
-.. data:: APP_AIOZIPKIN_KEY
+.. data:: APP_aiojaeger_KEY
 
-    Key, for aiohttp application, where aiozipkin related data is saved. In case
-    for some reason you want to use 2 aiozipkin instances or change default
+    Key, for aiohttp application, where aiojaeger related data is saved. In case
+    for some reason you want to use 2 aiojaeger instances or change default
     name, this parameter should not be used.
 
-.. data:: REQUEST_AIOZIPKIN_KEY
+.. data:: REQUEST_aiojaeger_KEY
 
-    Key, for aiohttp request, where aiozipkin span related to current request is
+    Key, for aiohttp request, where aiojaeger span related to current request is
     located.
 
-.. function:: setup(app, tracer, tracer_key=APP_AIOZIPKIN_KEY, request_key=APP_AIOZIPKIN_KEY)
+.. function:: setup(app, tracer, tracer_key=APP_aiojaeger_KEY, request_key=APP_aiojaeger_KEY)
 
-   Sets required parameters in aiohttp applications for aiozipkin.
+   Sets required parameters in aiohttp applications for aiojaeger.
 
    Tracer added into application context and cleaned after application
    shutdown. You can provide custom tracer_key, if default name is not
    suitable.
 
    :param aiottp.web.Application app: application for tracer to attach
-   :param Tracer tracer: aiozipkin tracer
+   :param Tracer tracer: aiojaeger tracer
    :param List skip_routes: list of routes not to be traced
-   :param str tracer_key: key for aiozipkin state in aiohttp Application
+   :param str tracer_key: key for aiojaeger state in aiohttp Application
    :param str request_key: key for Span in request object
    :returns: aiottp.web.Application
 
-.. function:: get_tracer(app, tracer_key=APP_AIOZIPKIN_KEY)
+.. function:: get_tracer(app, tracer_key=APP_aiojaeger_KEY)
 
-   Sets required parameters in aiohttp applications for aiozipkin.
+   Sets required parameters in aiohttp applications for aiojaeger.
 
-   By default tracer has APP_AIOZIPKIN_KEY in aiohttp application context,
+   By default tracer has APP_aiojaeger_KEY in aiohttp application context,
    you can provide own key, if for some reason default one is not suitable.
 
    :param aiottp.web.Application app: application for tracer to attach
    :param str tracer_key: key where tracerd stored in app
 
-.. function:: request_span(request, request_key=REQUEST_AIOZIPKIN_KEY)
+.. function:: request_span(request, request_key=REQUEST_aiojaeger_KEY)
 
     Return span created by middleware from request context, you can use it
     as parent on next child span.

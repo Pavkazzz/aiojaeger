@@ -6,7 +6,7 @@ import tracemalloc
 import pytest
 from yarl import URL
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 async def _retry_zipkin_client(url, client, retries=5, backoff_time=1):
@@ -103,7 +103,7 @@ async def test_zipkin_error(client, loop, caplog):
     msg = "zipkin responded with code: "
     assert msg in str(caplog.records[0].exc_info)
 
-    t = ("aiozipkin.transport", logging.ERROR, "Can not send spans to zipkin")
+    t = ("aiojaeger.transport", logging.ERROR, "Can not send spans to zipkin")
     assert caplog.record_tuples == [t]
 
 

@@ -2,7 +2,7 @@ import aiohttp
 import pytest
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 async def handler(request):

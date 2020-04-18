@@ -4,7 +4,7 @@ FLAGS=
 
 
 flake: checkrst bandit
-	flake8 aiozipkin tests examples setup.py --inline-quotes '"'
+	flake8 aiojaeger tests examples setup.py --inline-quotes '"'
 
 test: flake
 	py.test -s -v $(FLAGS) ./tests/
@@ -16,13 +16,13 @@ checkrst:
 	python setup.py check --restructuredtext
 
 bandit:
-	bandit -r ./aiozipkin
+	bandit -r ./aiojaeger
 
 pyroma:
 	pyroma -d .
 
 mypy:
-	mypy aiozipkin
+	mypy aiojaeger
 
 testloop:
 	while true ; do \
@@ -30,11 +30,11 @@ testloop:
     done
 
 cov cover coverage: flake checkrst
-	py.test -s -v --cov-report term --cov-report html --cov aiozipkin ./tests
+	py.test -s -v --cov-report term --cov-report html --cov aiojaeger ./tests
 	@echo "open file://`pwd`/htmlcov/index.html"
 
 ci: flake mypy
-	py.test -s -v --cov-report term --cov-report html --cov aiozipkin ./tests
+	py.test -s -v --cov-report term --cov-report html --cov aiojaeger ./tests
 	@echo "open file://`pwd`/htmlcov/index.html"
 
 clean:
@@ -75,7 +75,7 @@ develop:
 	pip install -r requirements-doc.txt
 
 black:
-	isort -rc aiozipkin tests
-	black aiozipkin tests -l 79
+	isort -rc aiojaeger tests
+	black aiojaeger tests -l 79
 
 .PHONY: all flake test vtest cov clean doc ci

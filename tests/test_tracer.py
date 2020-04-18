@@ -2,11 +2,11 @@ from unittest import mock
 
 import pytest
 
-from aiozipkin.helpers import create_endpoint
-from aiozipkin.sampler import SamplerABC
-from aiozipkin.spancontext import DummyTraceContext
-from aiozipkin.tracer import NoopSpan, Span, create_custom
-from aiozipkin.transport import StubTransport
+from aiojaeger.helpers import create_endpoint
+from aiojaeger.sampler import SamplerABC
+from aiojaeger.spancontext import DummyTraceContext
+from aiojaeger.tracer import NoopSpan, Span, create_custom
+from aiojaeger.transport import StubTransport
 
 
 def test_basic(tracer, fake_transport):
@@ -171,7 +171,7 @@ async def test_create_custom(fake_transport):
             return True
 
     with mock.patch(
-        "aiozipkin.tracer.Tracer"
+        "aiojaeger.tracer.Tracer"
     ) as tracer_stub:  # type: mock.MagicMock
         await create_custom(endpoint, fake_transport, FakeSampler())
         assert isinstance(tracer_stub.call_args[0][0], StubTransport)

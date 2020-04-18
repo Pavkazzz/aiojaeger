@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# aiozipkin documentation build configuration file, created by
+# aiojaeger documentation build configuration file, created by
 # sphinx-quickstart on Wed Mar  5 12:35:35 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -20,7 +20,7 @@ import sys
 
 _docs_path = os.path.dirname(__file__)
 _version_path = os.path.abspath(os.path.join(_docs_path,
-                                             '..', 'aiozipkin', '__init__.py'))
+                                             '..', 'aiojaeger', '__init__.py'))
 with codecs.open(_version_path, 'r', 'latin1') as fp:
     try:
         _version_info = re.search(r"^__version__ = '"
@@ -81,8 +81,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'aiozipkin'
-copyright = '2017-2018, aiozipkin contributors'
+project = 'aiojaeger'
+copyright = '2017-2018, aiojaeger contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -147,22 +147,22 @@ html_theme = 'aiohttp_theme'
 html_theme_options = {
     'logo': 'aiohttp-icon-128x128.png',
     'description': 'Distributed tracing capabilities from asyncio',
-    'canonical_url': 'http://docs.aiozipkin.org/en/stable/',
+    'canonical_url': 'http://docs.aiojaeger.org/en/stable/',
     'github_user': 'aio-libs',
-    'github_repo': 'aiozipkin',
+    'github_repo': 'aiojaeger',
     'github_button': True,
     'github_type': 'star',
     'github_banner': True,
-    'badges': [{'image': 'https://secure.travis-ci.org/aio-libs/aiozipkin.svg?branch=master',
-                'target': 'https://travis-ci.org/aio-libs/aiozipkin',
+    'badges': [{'image': 'https://secure.travis-ci.org/aio-libs/aiojaeger.svg?branch=master',
+                'target': 'https://travis-ci.org/aio-libs/aiojaeger',
                 'height': '20',
                 'alt': 'Travis CI status'},
-               {'image': 'https://codecov.io/github/aio-libs/aiozipkin/coverage.svg?branch=master',
-               'target': 'https://codecov.io/github/aio-libs/aiozipkin',
+               {'image': 'https://codecov.io/github/aio-libs/aiojaeger/coverage.svg?branch=master',
+               'target': 'https://codecov.io/github/aio-libs/aiojaeger',
                 'height': '20',
                 'alt': 'Code coverage status'},
-               {'image': 'https://badge.fury.io/py/aiozipkin.svg',
-               'target': 'https://badge.fury.io/py/aiozipkin',
+               {'image': 'https://badge.fury.io/py/aiojaeger.svg',
+               'target': 'https://badge.fury.io/py/aiojaeger',
                 'height': '20',
                 'alt': 'Latest PyPI package version'},
                {'image': 'https://badges.gitter.im/Join%20Chat.svg',
@@ -183,7 +183,7 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = 'aiozipkin-icon.svg'
+# html_logo = 'aiojaeger-icon.svg'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -246,7 +246,7 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'aiozipkindoc'
+htmlhelp_basename = 'aiojaegerdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -266,8 +266,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'aiozipkin.tex', 'aiozipkin Documentation',
-     'aiozipkin contributors', 'manual'),
+    ('index', 'aiojaeger.tex', 'aiojaeger Documentation',
+     'aiojaeger contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -296,8 +296,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'aiozipkin', 'aiozipkin Documentation',
-     ['aiozipkin'], 1)
+    ('index', 'aiojaeger', 'aiojaeger Documentation',
+     ['aiojaeger'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -310,8 +310,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'aiozipkin', 'aiohttp Documentation',
-     'Aiozipkin contributors', 'aiozipkin', 'One line description of project.',
+    ('index', 'aiojaeger', 'aiohttp Documentation',
+     'aiojaeger contributors', 'aiojaeger', 'One line description of project.',
      'Miscellaneous'),
 ]
 

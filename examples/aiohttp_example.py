@@ -2,7 +2,7 @@ import asyncio
 
 from aiohttp import web
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 async def handle(request):
@@ -21,7 +21,7 @@ async def handle(request):
         <title>aiohttp simple example</title>
     </head>
     <body>
-        <h3>This page was traced by aiozipkin</h3>
+        <h3>This page was traced by aiojaeger</h3>
         <p><a href="http://127.0.0.1:9001/status">Go to not traced page</a></p>
     </body>
     </html>
@@ -36,7 +36,7 @@ async def not_traced_handle(request):
         <title>aiohttp simple example</title>
     </head>
     <body>
-        <h3>This page was NOT traced by aiozipkin></h3>
+        <h3>This page was NOT traced by aiojaeger></h3>
         <p><a href="http://127.0.0.1:9001">Go to traced page</a></p>
     </body>
     </html>
@@ -48,7 +48,7 @@ async def make_app(host, port):
     app = web.Application()
     app.router.add_get("/", handle)
     # here we aquire reference to route, so later we can command
-    # aiozipkin not to trace it
+    # aiojaeger not to trace it
     skip_route = app.router.add_get("/status", not_traced_handle)
 
     endpoint = az.create_endpoint("aiohttp_server", ipv4=host, port=port)

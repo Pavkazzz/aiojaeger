@@ -1,13 +1,13 @@
-from aiozipkin.helpers.aiohttp import (
-    APP_AIOZIPKIN_KEY,
-    REQUEST_AIOZIPKIN_KEY,
+from aiojaeger.helpers.aiohttp import (
+    APP_AIOJAEGER_KEY,
+    REQUEST_AIOJAEGER_KEY,
     get_tracer,
     make_trace_config,
     middleware_maker,
     request_span,
     setup,
 )
-from aiozipkin.spancontext import CLIENT, CONSUMER, PRODUCER, SERVER
+from aiojaeger.spancontext import CLIENT, CONSUMER, PRODUCER, SERVER
 from .constants import (
     HTTP_HOST,
     HTTP_METHOD,
@@ -35,8 +35,8 @@ __all__ = (
     "request_span",
     "middleware_maker",
     "make_trace_config",
-    "APP_AIOZIPKIN_KEY",
-    "REQUEST_AIOZIPKIN_KEY",
+    "APP_AIOJAEGER_KEY",
+    "REQUEST_AIOJAEGER_KEY",
     # possible span kinds
     "CLIENT",
     "SERVER",

@@ -1,6 +1,6 @@
-from aiozipkin.helpers import Endpoint
-from aiozipkin.record import Record
-from aiozipkin.spancontext import DummyTraceContext
+from aiojaeger.helpers import Endpoint
+from aiojaeger.record import Record
+from aiojaeger.spancontext import DummyTraceContext
 
 
 def test_basic_ctr():

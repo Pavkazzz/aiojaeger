@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from aiozipkin.mypy_types import Headers, OptBool, OptStr
+from aiojaeger.mypy_types import Headers, OptBool, OptStr
 
 CLIENT = "CLIENT"
 SERVER = "SERVER"
@@ -26,7 +26,7 @@ class BaseTraceContext(BaseModel):
 
     @abc.abstractmethod
     def make_headers(self) -> Headers:
-        """Creates dict with zipkin headers from available context.
+        """Creates dict with headers from available context.
 
         Resulting dict should be passed to HTTP client  propagate contest
         to other services.

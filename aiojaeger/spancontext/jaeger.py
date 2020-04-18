@@ -1,8 +1,8 @@
 from typing import Optional, Tuple
 
-from aiozipkin.mypy_types import Headers
-from aiozipkin.spancontext import BaseTraceContext
-from aiozipkin.version import __version__
+from aiojaeger.mypy_types import Headers
+from aiojaeger.spancontext import BaseTraceContext
+from aiojaeger.version import __version__
 
 
 class JaegerConst:
@@ -35,7 +35,7 @@ class JaegerConst:
     # curl request: curl -H 'jaeger-baggage: k1=v1,k2=v2' http://...
     BAGGAGE_HEADER_KEY = "jaeger-baggage"
 
-    JAEGER_CLIENT_VERSION = f"aiozipkin-{__version__}"
+    JAEGER_CLIENT_VERSION = f"aiojaeger-{__version__}"
 
     # Tracer-scoped tag that tells the version of Jaeger client library
     JAEGER_VERSION_TAG_KEY = "jaeger.version"

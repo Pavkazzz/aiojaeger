@@ -12,8 +12,8 @@ Installation
 
 Clone repository and install required dependencies::
 
-    $ git clone git@github.com:aio-libs/aiozipkin.git
-    $ cd aiozipkin
+    $ git clone git@github.com:aio-libs/aiojaeger.git
+    $ cd aiojaeger
     $ pip install -e .
     $ pip install -r requirements-dev.txt
     $ pip install aiohttp-jinja2

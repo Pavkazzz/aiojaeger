@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from yarl import URL
 
-import aiozipkin as az
+import aiojaeger as az
 
 
 @pytest.mark.asyncio

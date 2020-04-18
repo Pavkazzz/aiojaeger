@@ -6,11 +6,11 @@ import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestServer
 
-from aiozipkin.helpers import create_endpoint
-from aiozipkin.sampler import Sampler
-from aiozipkin.spancontext import DummyTraceContext
-from aiozipkin.tracer import Tracer
-from aiozipkin.transport import StubZipkinTransport
+from aiojaeger.helpers import create_endpoint
+from aiojaeger.sampler import Sampler
+from aiojaeger.spancontext import DummyTraceContext
+from aiojaeger.tracer import Tracer
+from aiojaeger.transport import StubZipkinTransport
 
 
 @pytest.fixture(scope="session")

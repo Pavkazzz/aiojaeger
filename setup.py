@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 from setuptools import find_packages, setup
@@ -9,6 +10,19 @@ if sys.version_info < (3, 7, 0):
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
+
+def read_version():
+    regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
+    init_py = os.path.join(os.path.dirname(__file__),
+                           'aiozipkin', '__init__.py')
+    with open(init_py) as f:
+        for line in f:
+            match = regexp.match(line)
+            if match is not None:
+                return match.group(1)
+        else:
+            msg = 'Cannot find version in aiozipkin/__init__.py'
+            raise RuntimeError(msg)
 
 
 install_requires = ["aiohttp<4", "thriftpy2~=0.4.11", "pydantic~=1.4"]
@@ -27,7 +41,7 @@ classifiers = [
 
 setup(
     name="aiozipkin",
-    version="0.1.0",
+    version=read_version(),
     description=(
         "Distributed tracing instrumentation"
         " for asyncio application with zipkin and jaeger"

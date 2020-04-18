@@ -39,8 +39,8 @@ from aiojaeger.span import SpanAbc
 from aiojaeger.spancontext import CLIENT, SERVER, BaseTraceContext
 from aiojaeger.tracer import Tracer
 
-APP_AIOZIPKIN_KEY = "aiozipkin_tracer"
-REQUEST_AIOZIPKIN_KEY = "aiozipkin_span"
+APP_AIOJAEGER_KEY = "aiojaeger_tracer"
+REQUEST_AIOJAEGER_KEY = "aiojaeger_span"
 
 __all__ = (
     "setup",
@@ -48,15 +48,15 @@ __all__ = (
     "request_span",
     "middleware_maker",
     "make_trace_config",
-    "APP_AIOZIPKIN_KEY",
-    "REQUEST_AIOZIPKIN_KEY",
+    "APP_AIOJAEGER_KEY",
+    "REQUEST_AIOJAEGER_KEY",
 )
 
 Handler = Callable[[Request], Awaitable[Response]]
 Middleware = Callable[[Request, Handler], Awaitable[Response]]
 OptTraceVar = ContextVar[Optional[BaseTraceContext]]
 
-zipkin_context: OptTraceVar = ContextVar("zipkin_context", default=None)
+jaeger_context: OptTraceVar = ContextVar("jaeger_context", default=None)
 
 
 def _set_remote_endpoint(span: SpanAbc, request: Request) -> None:
@@ -118,8 +118,8 @@ def set_context_value(
 
 def middleware_maker(
     skip_routes: Optional[List[AbstractRoute]] = None,
-    tracer_key: str = APP_AIOZIPKIN_KEY,
-    request_key: str = REQUEST_AIOZIPKIN_KEY,
+    tracer_key: str = APP_AIOJAEGER_KEY,
+    request_key: str = REQUEST_AIOJAEGER_KEY,
     match_path: str = "/",
 ) -> Middleware:
     s = skip_routes
@@ -128,10 +128,10 @@ def middleware_maker(
     _middleware: Callable[[Middleware], Middleware] = middleware
 
     @_middleware
-    async def aiozipkin_middleware(
+    async def aiojaeger_middleware(
         request: Request, handler: Handler
     ) -> Response:
-        # route is in skip list, we do not track anything with zipkin
+        # route is in skip list, we do not track anything with tracing
         if request.match_info.route in skip_routes_set:
             resp = await handler(request)
             return resp
@@ -147,7 +147,7 @@ def middleware_maker(
             resp = await handler(request)
             return resp
 
-        with set_context_value(zipkin_context, span.context):
+        with set_context_value(jaeger_context, span.context):
             with span:
                 _set_span_properties(span, request)
                 try:
@@ -159,7 +159,7 @@ def middleware_maker(
 
         return resp
 
-    return aiozipkin_middleware
+    return aiojaeger_middleware
 
 
 def setup(
@@ -167,11 +167,11 @@ def setup(
     tracer: Tracer,
     *,
     skip_routes: Optional[List[AbstractRoute]] = None,
-    tracer_key: str = APP_AIOZIPKIN_KEY,
-    request_key: str = REQUEST_AIOZIPKIN_KEY,
+    tracer_key: str = APP_AIOJAEGER_KEY,
+    request_key: str = REQUEST_AIOJAEGER_KEY,
     match_path: str = "/",
 ) -> Application:
-    """Sets required parameters in aiohttp applications for aiozipkin.
+    """Sets required parameters in aiohttp applications for aiojaeger.
 
     Tracer added into application context and cleaned after application
     shutdown. You can provide custom tracer_key, if default name is not
@@ -186,28 +186,28 @@ def setup(
     )
     app.middlewares.append(m)  # type: ignore
 
-    # register cleanup signal to close zipkin transport connections
-    async def close_aiozipkin(app: Application) -> None:
+    # register cleanup signal to close transport connections
+    async def close_aiojaeger(app: Application) -> None:
         await app[tracer_key].close()
 
-    app.on_cleanup.append(close_aiozipkin)
+    app.on_cleanup.append(close_aiojaeger)
 
     return app
 
 
 def get_tracer(
-    app: Application, tracer_key: str = APP_AIOZIPKIN_KEY
+    app: Application, tracer_key: str = APP_AIOJAEGER_KEY
 ) -> Tracer:
     """Returns tracer object from application context.
 
-    By default tracer has APP_AIOZIPKIN_KEY in aiohttp application context,
+    By default tracer has APP_AIOJAEGER_KEY in aiohttp application context,
     you can provide own key, if for some reason default one is not suitable.
     """
     return cast(Tracer, app[tracer_key])
 
 
 def request_span(
-    request: Request, request_key: str = REQUEST_AIOZIPKIN_KEY
+    request: Request, request_key: str = REQUEST_AIOJAEGER_KEY
 ) -> SpanAbc:
     """Returns span created by middleware from request context, you can use it
     as parent on next child span.
@@ -215,7 +215,7 @@ def request_span(
     return cast(SpanAbc, request[request_key])
 
 
-class ZipkinClientSignals:
+class JaegerClientSignals:
     """Class contains signal handler for aiohttp client. Handlers executed
     only if aiohttp session contains tracer context with span.
     """
@@ -235,9 +235,9 @@ class ZipkinClientSignals:
             r: BaseTraceContext = trace_request_ctx["span_context"]
             return r
 
-        has_implicit_context = zipkin_context.get() is not None
+        has_implicit_context = jaeger_context.get() is not None
         if has_implicit_context:
-            return zipkin_context.get()
+            return jaeger_context.get()
 
         return None
 
@@ -295,13 +295,13 @@ class ZipkinClientSignals:
 
 
 def make_trace_config(tracer: Tracer) -> aiohttp.TraceConfig:
-    """Creates aiohttp.TraceConfig with enabled aiozipking instrumentation
+    """Creates aiohttp.TraceConfig with enabled aiojaeger instrumentation
     for aiohttp client.
     """
     tc = aiohttp.TraceConfig()
-    zipkin = ZipkinClientSignals(tracer)
+    jaeger = JaegerClientSignals(tracer)
 
-    tc.on_request_start.append(zipkin.on_request_start)  # type: ignore
-    tc.on_request_end.append(zipkin.on_request_end)  # type: ignore
-    tc.on_request_exception.append(zipkin.on_request_exception)  # type: ignore
+    tc.on_request_start.append(jaeger.on_request_start)  # type: ignore
+    tc.on_request_end.append(jaeger.on_request_end)  # type: ignore
+    tc.on_request_exception.append(jaeger.on_request_exception)  # type: ignore
     return tc

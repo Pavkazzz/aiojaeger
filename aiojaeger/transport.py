@@ -238,7 +238,7 @@ class ZipkinTransport(TransportABC):
 
 class ThriftTransport(TransportABC):
     jaeger_thrift = thriftpy2.load(
-        "aiozipkin/jaeger-idl/thrift/jaeger.thrift",
+        "aiojaeger/jaeger-idl/thrift/jaeger.thrift",
         module_name="jaeger_thrift",
     )
 

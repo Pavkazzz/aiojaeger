@@ -1,6 +1,6 @@
 from aiojaeger.helpers.aiohttp import (
-    APP_AIOZIPKIN_KEY,
-    REQUEST_AIOZIPKIN_KEY,
+    APP_AIOJAEGER_KEY,
+    REQUEST_AIOJAEGER_KEY,
     get_tracer,
     make_trace_config,
     middleware_maker,
@@ -35,8 +35,8 @@ __all__ = (
     "request_span",
     "middleware_maker",
     "make_trace_config",
-    "APP_AIOZIPKIN_KEY",
-    "REQUEST_AIOZIPKIN_KEY",
+    "APP_AIOJAEGER_KEY",
+    "REQUEST_AIOJAEGER_KEY",
     # possible span kinds
     "CLIENT",
     "SERVER",

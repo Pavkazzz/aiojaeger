@@ -22,7 +22,7 @@ class JaegerConst:
     TRACE_ID_HEADER = "uber-trace-id"
 
     # Prefix for HTTP headers used to record baggage items
-    BAGGAGE_HEADER_PREFIX = b"uberctx-"
+    BAGGAGE_HEADER_PREFIX = "uberctx-"
 
     # The name of HTTP header or a TextMap carrier key which, if found in the
     # carrier, forces the trace to be sampled as "debug" trace. The value of
@@ -119,7 +119,7 @@ class JaegerConst:
             trace_id, span_id, parent_id, _ = cls.parse_trace_id(
                 headers[cls.TRACE_ID_HEADER]
             )
-        except ValueError:
+        except (ValueError, KeyError):
             return None
 
         return JaegerTraceContext(

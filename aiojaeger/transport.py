@@ -138,6 +138,9 @@ class BatchManager:
                 self._timer.cancel()
 
     async def stop(self) -> None:
+        if self._ender.done():
+            return None
+
         self._ender.set_result(None)
 
         await self._sender_task

@@ -14,14 +14,14 @@ def read(f):
 def read_version():
     regexp = re.compile(r"^__version__\W*=\W*'([\d.abrc]+)'")
     init_py = os.path.join(os.path.dirname(__file__),
-                           'aiozipkin', '__version__.py')
+                           'aiozipkin', 'version.py')
     with open(init_py) as f:
         for line in f:
             match = regexp.match(line)
             if match is not None:
                 return match.group(1)
         else:
-            msg = 'Cannot find version in aiozipkin/__version__.py'
+            msg = 'Cannot find version in aiozipkin/version.py'
             raise RuntimeError(msg)
 
 

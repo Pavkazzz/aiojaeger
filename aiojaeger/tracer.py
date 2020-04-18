@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING  # noqa
+from typing import Type, TYPE_CHECKING  # noqa
 from typing import Any, AsyncContextManager, Awaitable, Dict, Optional
 
 from aiojaeger.context_managers import _ContextManager
@@ -112,8 +112,15 @@ class Tracer(_Base):
     async def __aexit__(self, *args: Any) -> None:
         await self.close()
 
+    @property
+    def context(self) -> Type[BaseTraceContext]:
+        return self._transport.span_context
+
     def make_context(self, headers: Headers) -> Optional[BaseTraceContext]:
-        return self._transport.span_context.make_context(headers)
+        return self.context.make_context(headers)
+
+    def make_headers(self, context: BaseTraceContext):
+        return self.context.make_headers(context)
 
 
 def create_zipkin(

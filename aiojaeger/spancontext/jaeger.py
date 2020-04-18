@@ -135,7 +135,7 @@ class JaegerConst:
 class JaegerTraceContext(BaseTraceContext):
     @classmethod
     def make_context(cls, headers: Headers) -> BaseTraceContext:
-        return JaegerTraceContext.make_context(headers)
+        return JaegerConst.make_context(headers)
 
     def make_headers(self) -> Headers:
-        return JaegerTraceContext.make_headers(self)
+        return JaegerConst.make_headers(self)

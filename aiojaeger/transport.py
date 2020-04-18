@@ -1,6 +1,7 @@
 import abc
 import asyncio
 import logging
+import os
 from collections import deque
 from typing import (  # flake8: noqa
     Any,
@@ -31,6 +32,7 @@ try:
     from thriftpy2.transport import TCyMemoryBuffer as TMemoryBuffer
 except ImportError:
     from thriftpy2.transport import TMemoryBuffer
+import aiojaeger
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,9 @@ class TransportABC(abc.ABC):
     @property
     @abc.abstractmethod
     def span_context(self) -> Type[BaseTraceContext]:
+        pass
+
+    def endpoint(self, local_endpoint):
         pass
 
 
@@ -237,8 +242,9 @@ class ZipkinTransport(TransportABC):
 
 
 class ThriftTransport(TransportABC):
+    MODULE_PATH = os.path.abspath(os.path.dirname(aiojaeger.__file__))
     jaeger_thrift = thriftpy2.load(
-        "aiojaeger/jaeger-idl/thrift/jaeger.thrift",
+        os.path.join(MODULE_PATH, "jaeger-idl/thrift/jaeger.thrift"),
         module_name="jaeger_thrift",
     )
 
@@ -273,9 +279,11 @@ class ThriftTransport(TransportABC):
         self._batch_manager.add(record)
 
     async def _send_data(self, data: List[Record]) -> bool:
+        if not data:
+            return True
         batch = self.jaeger_thrift.Batch()
         process = self.jaeger_thrift.Process()
-        process.serviceName = "test"
+        process.serviceName = data[0].entrypoint_servicename
 
         batch.process = process
         spans = []
@@ -284,7 +292,7 @@ class ThriftTransport(TransportABC):
             span.traceIdLow = int(record.context.trace_id)
             span.traceIdHigh = 0
             span.spanId = int(record.context.span_id)
-            span.parentSpanId = (
+            span.parentSpanId = int(
                 record.context.parent_id if record.context.parent_id else 0
             )
             span.operationName = record._name

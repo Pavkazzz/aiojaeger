@@ -86,3 +86,7 @@ class Record:
             "tags": self._tags,
         }
         return filter_none(rec, ["kind"])
+
+    @property
+    def entrypoint_servicename(self):
+        return self._local_endpoint["serviceName"]

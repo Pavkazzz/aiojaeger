@@ -25,7 +25,7 @@ class BaseTraceContext(BaseModel):
     shared: bool
 
     @abc.abstractmethod
-    def make_headers(self) -> Headers:
+    def make_headers(cls) -> Headers:
         """Creates dict with headers from available context.
 
         Resulting dict should be passed to HTTP client  propagate contest
@@ -40,8 +40,7 @@ class BaseTraceContext(BaseModel):
 
 
 class DummyTraceContext(BaseTraceContext):
-    @classmethod
-    def make_headers(cls) -> Headers:
+    def make_headers(self) -> Headers:
         return {}
 
     @classmethod

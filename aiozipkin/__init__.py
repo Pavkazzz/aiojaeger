@@ -1,15 +1,12 @@
-try:
-    from aiozipkin.helpers.aiohttp import (
-        APP_AIOZIPKIN_KEY,
-        REQUEST_AIOZIPKIN_KEY,
-        get_tracer,
-        make_trace_config,
-        middleware_maker,
-        request_span,
-        setup,
-    )
-except ImportError:
-    pass
+from aiozipkin.helpers.aiohttp import (
+    APP_AIOZIPKIN_KEY,
+    REQUEST_AIOZIPKIN_KEY,
+    get_tracer,
+    make_trace_config,
+    middleware_maker,
+    request_span,
+    setup,
+)
 from aiozipkin.spancontext import CLIENT, CONSUMER, PRODUCER, SERVER
 from .constants import (
     HTTP_HOST,

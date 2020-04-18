@@ -29,7 +29,7 @@ classifiers = [
 
 setup(
     name="aiozipkin",
-    version=__version__,
+    version="0.1.0",
     description=(
         "Distributed tracing instrumentation"
         " for asyncio application with zipkin and jaeger"

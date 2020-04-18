@@ -43,13 +43,14 @@ APP_AIOJAEGER_KEY = "aiojaeger_tracer"
 REQUEST_AIOJAEGER_KEY = "aiojaeger_span"
 
 __all__ = (
-    "setup",
-    "get_tracer",
-    "request_span",
-    "middleware_maker",
-    "make_trace_config",
     "APP_AIOJAEGER_KEY",
+    "get_tracer",
+    "jaeger_context",
+    "make_trace_config",
+    "middleware_maker",
     "REQUEST_AIOJAEGER_KEY",
+    "request_span",
+    "setup",
 )
 
 Handler = Callable[[Request], Awaitable[Response]]

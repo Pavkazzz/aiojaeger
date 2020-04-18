@@ -1,14 +1,16 @@
-from aiozipkin.helpers.aiohttp import (
-    APP_AIOZIPKIN_KEY,
-    REQUEST_AIOZIPKIN_KEY,
-    get_tracer,
-    make_trace_config,
-    middleware_maker,
-    request_span,
-    setup,
-)
+try:
+    from aiozipkin.helpers.aiohttp import (
+        APP_AIOZIPKIN_KEY,
+        REQUEST_AIOZIPKIN_KEY,
+        get_tracer,
+        make_trace_config,
+        middleware_maker,
+        request_span,
+        setup,
+    )
+except ImportError:
+    pass
 from aiozipkin.spancontext import CLIENT, CONSUMER, PRODUCER, SERVER
-
 from .constants import (
     HTTP_HOST,
     HTTP_METHOD,
@@ -21,7 +23,7 @@ from .constants import (
 )
 from .helpers import create_endpoint
 from .sampler import Sampler
-from .tracer import Tracer, create_custom, create_jaeger, create_zipkin
+from .tracer import create_custom, create_jaeger, create_zipkin, Tracer
 
 __all__ = (
     "Tracer",

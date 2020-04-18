@@ -3,7 +3,6 @@ import asyncio
 import aiohttp
 import pytest
 from aiodocker import Docker
-from async_generator import async_generator, yield_
 
 
 def pytest_addoption(parser):
@@ -45,7 +44,6 @@ async def wait_for_response(url, delay=0.001):
 
 
 @pytest.fixture(scope="session")
-@async_generator
 async def zipkin_server(docker, docker_pull):
     tag = "2"
     image = "openzipkin/zipkin:{}".format(tag)
@@ -72,7 +70,7 @@ async def zipkin_server(docker, docker_pull):
     url = "http://{}:{}".format(host, port)
     await wait_for_response(url)
 
-    await yield_(params)
+    yield params
 
     await container.kill()
     await container.delete(force=True)

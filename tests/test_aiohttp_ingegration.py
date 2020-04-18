@@ -1,7 +1,6 @@
 import aiohttp
 import pytest
 from aiohttp import web
-from async_generator import async_generator, yield_
 
 import aiozipkin as az
 
@@ -28,7 +27,6 @@ async def error_handler(request):
 
 
 @pytest.fixture
-@async_generator
 async def client(test_client, tracer):
     app = web.Application()
     app.router.add_get("/simple", handler)
@@ -40,7 +38,7 @@ async def client(test_client, tracer):
 
     az.setup(app, tracer)
     c = await test_client(app)
-    await yield_(c)
+    yield c
 
     await session.close()
 

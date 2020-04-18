@@ -25,14 +25,14 @@ class JaegerConst:
     BAGGAGE_HEADER_PREFIX = b"uberctx-"
 
     # The name of HTTP header or a TextMap carrier key which, if found in the
-    # carrier, forces the trace to be sampled as "debug" trace. The value of the
-    # header is recorded as the tag on the # root span, so that the trace can
-    # be found in the UI using this value as a correlation ID.
+    # carrier, forces the trace to be sampled as "debug" trace. The value of
+    # the header is recorded as the tag on the # root span, so that the trace
+    # can be found in the UI using this value as a correlation ID.
     DEBUG_ID_HEADER_KEY = "jaeger-debug-id"
 
-    # The name of HTTP header or a TextMap carrier key that can be used to pass
-    # additional baggage to the span, e.g. when executing an ad-hoc curl request:
-    # curl -H 'jaeger-baggage: k1=v1,k2=v2' http://...
+    # The name of HTTP header or a TextMap carrier key that can be used to
+    # pass additional baggage to the span, e.g. when executing an ad-hoc
+    # curl request: curl -H 'jaeger-baggage: k1=v1,k2=v2' http://...
     BAGGAGE_HEADER_KEY = "jaeger-baggage"
 
     JAEGER_CLIENT_VERSION = f"aiozipkin-{__version__}"
@@ -85,7 +85,8 @@ class JaegerConst:
 
     @classmethod
     def make_trace_id(cls, context: BaseTraceContext) -> str:
-        # TODO: flags bit - https://www.jaegertracing.io/docs/1.17/client-libraries/#key
+        # TODO: flags bit
+        # https://www.jaegertracing.io/docs/1.17/client-libraries/#key
         return f"{context.trace_id}:{context.span_id}:{context.parent_id}:0"
 
     @classmethod

@@ -6,9 +6,7 @@ from typing import (  # flake8: noqa
     Any,
     Awaitable,
     Callable,
-    Coroutine,
     Deque,
-    Dict,
     List,
     Optional,
     Tuple,
@@ -26,11 +24,8 @@ from .record import Record
 from .spancontext import BaseTraceContext, DummyTraceContext
 from .spancontext.jaeger import JaegerTraceContext
 from .spancontext.zipkin import ZipkinTraceContext
-from .utils import (
-    generate_random_64bit_string,
-    generate_random_128bit_string,
-    random_id,
-)
+from .utils import (generate_random_128bit_string,
+                    generate_random_64bit_string, random_id)
 
 try:
     from thriftpy2.transport import TCyMemoryBuffer as TMemoryBuffer
@@ -85,8 +80,10 @@ class StubTransport(TransportABC):
     async def close(self) -> None:
         pass
 
-    generate_trace_id = lambda x: ""
-    generate_span_id = generate_trace_id
+    def gen(self) -> str: return ""
+
+    generate_trace_id = gen
+    generate_span_id = gen
 
     @property
     def span_context(self) -> Type[BaseTraceContext]:
@@ -241,7 +238,8 @@ class ZipkinTransport(TransportABC):
 
 class ThriftTransport(TransportABC):
     jaeger_thrift = thriftpy2.load(
-        "jaeger-idl/thrift/jaeger.thrift", module_name="jaeger_thrift"
+        "aiozipkin/jaeger-idl/thrift/jaeger.thrift",
+        module_name="jaeger_thrift",
     )
 
     def __init__(

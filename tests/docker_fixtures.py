@@ -106,7 +106,7 @@ async def jaeger_server(docker, docker_pull):
             "AttachStdout": False,
             "AttachStderr": False,
             "HostConfig": {"PublishAllPorts": True},
-            "ExposedPorts": {"14268/tcp": {}, "16686/tcp": {},},
+            "ExposedPorts": {"14268/tcp": {}, "16686/tcp": {}},
         },
     )
     await container.start()

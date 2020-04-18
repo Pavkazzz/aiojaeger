@@ -298,10 +298,10 @@ def make_trace_config(tracer: Tracer) -> aiohttp.TraceConfig:
     """Creates aiohttp.TraceConfig with enabled aiozipking instrumentation
     for aiohttp client.
     """
-    trace_config = aiohttp.TraceConfig()
+    tc = aiohttp.TraceConfig()
     zipkin = ZipkinClientSignals(tracer)
 
-    trace_config.on_request_start.append(zipkin.on_request_start)  # type: ignore
-    trace_config.on_request_end.append(zipkin.on_request_end)  # type: ignore
-    trace_config.on_request_exception.append(zipkin.on_request_exception)  # type: ignore
-    return trace_config
+    tc.on_request_start.append(zipkin.on_request_start)  # type: ignore
+    tc.on_request_end.append(zipkin.on_request_end)  # type: ignore
+    tc.on_request_exception.append(zipkin.on_request_exception)  # type: ignore
+    return tc

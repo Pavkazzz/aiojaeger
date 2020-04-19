@@ -1,12 +1,5 @@
-from typing import (  # noqa
-    TYPE_CHECKING,
-    Any,
-    AsyncContextManager,
-    Awaitable,
-    Dict,
-    Optional,
-    Type,
-)
+from typing import Type  # noqa
+from typing import Any, AsyncContextManager, Awaitable, Dict, Optional
 
 from aiojaeger.context_managers import _ContextManager
 
@@ -23,16 +16,9 @@ from .transport import (
     ZipkinTransport,
 )
 
-if TYPE_CHECKING:
 
-    class _Base(AsyncContextManager["Tracer"]):
-        pass
-
-
-else:
-
-    class _Base(AsyncContextManager):
-        pass
+class _Base(AsyncContextManager["Tracer"]):
+    pass
 
 
 class Tracer(_Base):
@@ -74,11 +60,11 @@ class Tracer(_Base):
             return NoopSpan(self, context)
 
         record = Record(context, self._local_endpoint)
-        self._records[context.span_id] = record
+        self._records[context.name] = record
         return Span(self, context, record)
 
     def _send(self, record: Record) -> None:
-        self._records.pop(record.context.span_id, None)
+        self._records.pop(record.context.name, None)
         self._transport.send(record)
 
     def _next_context(
@@ -102,7 +88,7 @@ class Tracer(_Base):
 
         new_context = self._transport.span_context(
             trace_id=trace_id,
-            parent_id=None,
+            parent_id=0,
             span_id=span_id,
             sampled=sampled,
             debug=debug,
@@ -137,6 +123,10 @@ class Tracer(_Base):
         if context is None:
             return self.new_trace()
         return self.join_span(context)
+
+    @property
+    def transport(self) -> TransportABC:
+        return self._transport
 
 
 def create_zipkin(

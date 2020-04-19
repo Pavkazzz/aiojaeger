@@ -9,9 +9,9 @@ from aiojaeger.spancontext.zipkin import ZipkinConst, ZipkinTraceContext
 @pytest.fixture
 def trace_context():
     new_context = ZipkinTraceContext(
-        trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
-        parent_id=None,
-        span_id="41baf1be2fb9bfc5",
+        trace_id=int("6f9a20b5092fa5e144fd15cc31141cd4", 16),
+        parent_id=0,
+        span_id=int("41baf1be2fb9bfc5", 16),
         sampled=True,
         debug=False,
         shared=False,
@@ -22,9 +22,9 @@ def trace_context():
 @pytest.fixture
 def other_trace_context():
     context = ZipkinTraceContext(
-        trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
-        parent_id="05e3ac9a4f6e3b90",
-        span_id="41baf1be2fb9bfc5",
+        trace_id=int("6f9a20b5092fa5e144fd15cc31141cd4", 16),
+        parent_id=int("05e3ac9a4f6e3b90", 16),
+        span_id=int("41baf1be2fb9bfc5", 16),
         sampled=True,
         debug=True,
         shared=False,

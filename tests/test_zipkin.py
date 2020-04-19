@@ -7,6 +7,7 @@ import pytest
 from yarl import URL
 
 import aiojaeger as az
+from aiojaeger.utils import hexify
 
 
 async def _retry_zipkin_client(url, client, retries=5, backoff_time=1):
@@ -40,7 +41,7 @@ async def test_basic(zipkin_url, client, loop):
     # close forced sending data to server regardless of send interval
     await tracer.close()
 
-    trace_id = span.context.trace_id
+    trace_id = hexify(span.context.trace_id)
     url = URL(zipkin_url).with_path("/zipkin/api/v2/traces")
     data = await _retry_zipkin_client(url, client)
     assert any(s["traceId"] == trace_id for trace in data for s in trace), data
@@ -56,7 +57,7 @@ async def test_basic_context_manager(zipkin_url, client, loop):
             span.name("root_span")
             await asyncio.sleep(0.1)
 
-    trace_id = span.context.trace_id
+    trace_id = hexify(span.context.trace_id)
     url = URL(zipkin_url).with_path("/zipkin/api/v2/traces")
     data = await _retry_zipkin_client(url, client)
 

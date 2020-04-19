@@ -6,6 +6,7 @@ from async_timeout import timeout
 
 import aiojaeger as az
 import aiojaeger.transport as azt
+from aiojaeger.utils import hexify
 
 
 @pytest.mark.asyncio
@@ -33,7 +34,7 @@ async def test_retry(fake_zipkin, loop):
     await tracer.close()
 
     data = fake_zipkin.get_received_data()
-    trace_id = span.context.trace_id
+    trace_id = hexify(span.context.trace_id)
     assert any(s["traceId"] == trace_id for trace in data for s in trace), data
 
 
@@ -62,7 +63,7 @@ async def test_batches(fake_zipkin, loop):
     await tracer.close()
 
     data = fake_zipkin.get_received_data()
-    trace_id = span.context.trace_id
+    trace_id = hexify(span.context.trace_id)
     assert len(data[0]) == 2
     assert len(data[1]) == 1
     assert data[0][0]["name"] == "child_1"

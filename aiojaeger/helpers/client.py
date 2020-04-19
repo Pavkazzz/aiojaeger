@@ -18,8 +18,14 @@ class TracingClient:
         "_sample_rate",
     )
 
-    def __init__(self, address: str, service_name: str, host: str, port: int,
-                 sample_rate: float = 1.0):
+    def __init__(
+        self,
+        address: str,
+        service_name: str,
+        host: str,
+        port: int,
+        sample_rate: float = 1.0,
+    ):
         self._address = address
         self._endpoint = aj.create_endpoint(service_name, ipv6=host, port=port)
         self._tracer: Optional[aj.Tracer] = None

@@ -12,7 +12,6 @@ from typing import (  # flake8: noqa
     Optional,
     Tuple,
     Type,
-    Union,
 )
 
 import aiohttp
@@ -22,12 +21,12 @@ from aiohttp.client_exceptions import ClientError, ClientResponseError
 from thriftpy2.protocol import TBinaryProtocolFactory
 
 import aiojaeger
+
 from .record import Record
 from .spancontext import BaseTraceContext, DummyTraceContext
 from .spancontext.jaeger import JaegerTraceContext
 from .spancontext.zipkin import ZipkinTraceContext
-from .utils import (generate_random_128bit_string,
-                    generate_random_64bit_string, random_id)
+from .utils import random_id
 
 try:
     from thriftpy2.transport import TCyMemoryBuffer as TMemoryBuffer
@@ -56,11 +55,11 @@ class TransportABC(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def generate_trace_id(self) -> Union[int, str]:
+    def generate_trace_id(self) -> int:
         pass
 
     @abc.abstractmethod
-    def generate_span_id(self) -> Union[int, str]:
+    def generate_span_id(self) -> int:
         pass
 
     @property
@@ -82,11 +81,8 @@ class StubTransport(TransportABC):
     async def close(self) -> None:
         pass
 
-    def gen(self) -> str:
-        return ""
-
-    generate_trace_id = gen
-    generate_span_id = gen
+    def generate_trace_id(self) -> int: return random_id()
+    def generate_span_id(self) -> int: return random_id()
 
     @property
     def span_context(self) -> Type[BaseTraceContext]:
@@ -231,11 +227,11 @@ class ZipkinTransport(TransportABC):
         await self._batch_manager.stop()
         await self._session.close()
 
-    def generate_trace_id(self) -> Union[int, str]:
-        return generate_random_128bit_string()
+    def generate_trace_id(self) -> int:
+        return random_id(128)
 
-    def generate_span_id(self) -> Union[int, str]:
-        return generate_random_64bit_string()
+    def generate_span_id(self) -> int:
+        return random_id(64)
 
     @property
     def span_context(self) -> Type[BaseTraceContext]:
@@ -282,39 +278,26 @@ class ThriftTransport(TransportABC):
     async def _send_data(self, data: List[Record]) -> bool:
         if not data:
             return True
+
         batch = self.jaeger_thrift.Batch()
         process = self.jaeger_thrift.Process()
-        process.serviceName = data[0].entrypoint_servicename
+        process.serviceName = data[0].service_name
 
         batch.process = process
         spans = []
         for record in data:
-            span = self.jaeger_thrift.Span()
-            span.traceIdLow = int(record.context.trace_id)
-            span.traceIdHigh = 0
-            span.spanId = int(record.context.span_id)
-            span.parentSpanId = int(
-                record.context.parent_id if record.context.parent_id else 0
-            )
-            span.operationName = record._name
-            span.startTime = record._timestamp
-            span.duration = record._duration
-            span.flags = 0
-            if record._kind:
-                tag = self.jaeger_thrift.Tag()
-                tag.key = "span.kind"
-                tag.vType = self.jaeger_thrift.TagType.STRING
-                tag.vStr = record._kind
-                span.tags = [tag]
+            span = record.asthrift(self.jaeger_thrift)
             spans.append(span)
         batch.spans = spans
 
         otrans = TMemoryBuffer()
         self._binary.get_protocol(otrans).write_struct(batch)
+        resp = await self._session.post(self._address, data=otrans.getvalue())
         try:
-            await self._session.post(self._address, data=otrans.getvalue())
+            resp.raise_for_status()
         except ClientResponseError:
-            logger.exception("Can not send spans to jaeger")
+            text = await resp.text()
+            logger.exception("Can not send spans to jaeger: %r", text)
             return False
         return True
 

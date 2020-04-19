@@ -7,7 +7,7 @@ from aiohttp.test_utils import make_mocked_request
 from aiohttp.web_exceptions import HTTPException, HTTPNotFound
 
 import aiojaeger as az
-from aiojaeger import middleware_maker
+from aiojaeger import Tracer, middleware_maker
 
 
 def test_basic_setup(tracer):
@@ -19,10 +19,9 @@ def test_basic_setup(tracer):
     assert tracer is fetched_tracer
 
 
-@pytest.mark.asyncio
-async def test_middleware_with_default_transport(tracer, fake_transport):
+async def test_middleware_with_default_transport(zipkin_tracer: Tracer):
     app = web.Application()
-    az.setup(app, tracer)
+    az.setup(app, zipkin_tracer)
 
     async def handler(request):
         return web.Response(body=b"data")
@@ -34,9 +33,9 @@ async def test_middleware_with_default_transport(tracer, fake_transport):
     await middleware(req, handler)
     span = az.request_span(req)
     assert span
-    assert len(fake_transport.records) == 1
+    assert len(zipkin_tracer.transport.records) == 1
 
-    rec = fake_transport.records[0]
+    rec = zipkin_tracer.transport.records[0]
     assert rec.asdict()["tags"][az.HTTP_ROUTE] == "/{pid}"
 
     # noop span does not produce records
@@ -45,7 +44,7 @@ async def test_middleware_with_default_transport(tracer, fake_transport):
     await middleware(req_noop, handler)
     span = az.request_span(req_noop)
     assert span
-    assert len(fake_transport.records) == 1
+    assert len(zipkin_tracer.transport.records) == 1
 
 
 @pytest.mark.asyncio

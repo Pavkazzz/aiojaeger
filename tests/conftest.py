@@ -57,24 +57,24 @@ def factory_tracer():
 
 
 @pytest.fixture
-def tracer(factory_tracer, fake_transport):
+async def tracer(factory_tracer, fake_transport):
     tracer = factory_tracer(fake_transport)
     yield tracer
-    tracer.close()
+    await tracer.close()
 
 
 @pytest.fixture
-def zipkin_tracer(factory_tracer, fake_zipkin_transport):
+async def zipkin_tracer(factory_tracer, fake_zipkin_transport):
     tracer = factory_tracer(fake_zipkin_transport)
     yield tracer
-    tracer.close()
+    await tracer.close()
 
 
 @pytest.fixture
-def jaeger_tracer(factory_tracer, fake_jaeger_transport):
+async def jaeger_tracer(factory_tracer, fake_jaeger_transport):
     tracer = factory_tracer(fake_jaeger_transport)
     yield tracer
-    tracer.close()
+    await tracer.close()
 
 
 @pytest.fixture
@@ -154,4 +154,4 @@ async def fake_zipkin(loop):
     await server.close()
 
 
-pytest_plugins = ["docker_fixtures"]
+pytest_plugins = "tests.docker_fixtures"

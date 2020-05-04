@@ -82,4 +82,5 @@ upload:
 	python setup.py sdist bdist_wheel
 	twine check dist/*
 	twine upload dist/*
+
 .PHONY: all flake test vtest cov clean doc ci

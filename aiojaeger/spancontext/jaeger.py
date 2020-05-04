@@ -22,7 +22,7 @@ class JaegerConst:
     TRACE_ID_HEADER = "uber-trace-id"
 
     # Prefix for HTTP headers used to record baggage items
-    BAGGAGE_HEADER_PREFIX = b"uberctx-"
+    BAGGAGE_HEADER_PREFIX = "uberctx-"
 
     # The name of HTTP header or a TextMap carrier key which, if found in the
     # carrier, forces the trace to be sampled as "debug" trace. The value of
@@ -84,17 +84,33 @@ class JaegerConst:
     DEFAULT_THROTTLER_REFRESH_INTERVAL = 5
 
     @classmethod
-    def make_trace_id(cls, context: BaseTraceContext) -> str:
-        # TODO: flags bit
+    def make_trace_id(cls, c: BaseTraceContext) -> str:
         # https://www.jaegertracing.io/docs/1.17/client-libraries/#key
-        return f"{context.trace_id}:{context.span_id}:{context.parent_id}:0"
+        flags = 0
+        if c.debug:
+            flags |= cls.DEBUG_FLAG
+        if c.sampled:
+            flags |= cls.SAMPLED_FLAG
+        return f"{c.trace_id}:{c.span_id}:{c.parent_id}:{flags}"
 
     @classmethod
-    def parse_trace_id(cls, header_trace_id: str) -> Tuple[str, ...]:
-        parts = header_trace_id.split(":", 3)
-        if len(parts) != 3:
+    def parse_trace_id(cls, header_trace_id: str) -> Tuple[int, ...]:
+        try:
+            parts = header_trace_id.split(":", 4)
+        except AttributeError:
             raise ValueError
-        return tuple(parts)
+        if len(parts) != 4:
+            raise ValueError
+
+        def to_int(s: str) -> int:
+            return int(s, 16)
+
+        trace_id, span_id, parent_id, flags = tuple(map(to_int, parts))
+        if trace_id <= 0 or span_id <= 0:
+            raise ValueError
+        if parent_id < 0 or flags < 0:
+            raise ValueError
+        return trace_id, span_id, parent_id, flags
 
     @classmethod
     def make_headers(cls, context: BaseTraceContext) -> Headers:
@@ -116,26 +132,26 @@ class JaegerConst:
 
         try:
             # TODO: flags. debug and sampled
-            trace_id, span_id, parent_id, _ = cls.parse_trace_id(
+            trace_id, span_id, parent_id, flags = cls.parse_trace_id(
                 headers[cls.TRACE_ID_HEADER]
             )
-        except ValueError:
+        except (ValueError, KeyError):
             return None
 
         return JaegerTraceContext(
             trace_id=trace_id,
             parent_id=parent_id,
             span_id=span_id,
-            sampled=False,
-            debug=False,
+            sampled=bool(flags & cls.SAMPLED_FLAG),
+            debug=bool(flags & cls.DEBUG_FLAG),
             shared=False,
         )
 
 
 class JaegerTraceContext(BaseTraceContext):
     @classmethod
-    def make_context(cls, headers: Headers) -> BaseTraceContext:
-        return JaegerTraceContext.make_context(headers)
+    def make_context(cls, headers: Headers) -> Optional[BaseTraceContext]:
+        return JaegerConst.make_context(headers)
 
     def make_headers(self) -> Headers:
-        return JaegerTraceContext.make_headers(self)
+        return JaegerConst.make_headers(self)

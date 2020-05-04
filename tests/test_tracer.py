@@ -20,7 +20,7 @@ def test_basic(tracer, fake_transport):
 
     assert not span.is_noop
     assert span.tracer is tracer
-    assert span.context.parent_id is None
+    assert span.context.parent_id == 0
     assert isinstance(span, Span)
     assert len(fake_transport.records) == 1
     record = fake_transport.records[0]
@@ -58,9 +58,9 @@ def test_basic(tracer, fake_transport):
 
 def test_noop_span_methods(tracer):
     context = DummyTraceContext(
-        trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
-        parent_id=None,
-        span_id="41baf1be2fb9bfc5",
+        trace_id=int("6f9a20b5092fa5e144fd15cc31141cd4", 16),
+        parent_id=0,
+        span_id=int("41baf1be2fb9bfc5", 16),
         sampled=False,
         debug=False,
         shared=True,
@@ -95,7 +95,7 @@ def test_trace_join_span(tracer, context):
 
     assert span.context.trace_id == context.trace_id
     assert span.context.span_id == context.span_id
-    assert span.context.parent_id is None
+    assert span.context.parent_id == 0
 
     new_context = context.copy(update=dict(sampled=None))
     with tracer.join_span(new_context) as span:

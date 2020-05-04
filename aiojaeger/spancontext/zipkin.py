@@ -1,7 +1,11 @@
+import logging
 from typing import List, Optional
 
-from aiojaeger.mypy_types import Headers, OptBool, OptStr
+from aiojaeger.mypy_types import Headers, OptBool
 from aiojaeger.spancontext import BaseTraceContext
+from aiojaeger.utils import hexify
+
+log = logging.getLogger(__name__)
 
 
 class ZipkinConst:
@@ -24,13 +28,13 @@ class ZipkinConst:
 
         # TODO: toggle for make single header or remove single
         headers = {
-            cls.TRACE_ID_HEADER: context.trace_id,
-            cls.SPAN_ID_HEADER: context.span_id,
+            cls.TRACE_ID_HEADER: hexify(context.trace_id),
+            cls.SPAN_ID_HEADER: hexify(context.span_id),
             cls.FLAGS_HEADER: "0",
             cls.SAMPLED_ID_HEADER: "1" if context.sampled else "0",
         }
-        if context.parent_id is not None:
-            headers[cls.PARENT_ID_HEADER] = context.parent_id
+        if context.parent_id > 0:
+            headers[cls.PARENT_ID_HEADER] = hexify(context.parent_id)
         return headers
 
     @classmethod
@@ -48,32 +52,40 @@ class ZipkinConst:
         else:
             sampled = "0"
 
-        params: List[str] = [c.trace_id, c.span_id, sampled]
-        if c.parent_id is not None:
-            params.append(c.parent_id)
+        params: List[str] = [hexify(c.trace_id), hexify(c.span_id), sampled]
+        if c.parent_id > 0:
+            params.append(hexify(c.parent_id))
 
         h = cls.DELIMITER.join(params)
         headers = {cls.SINGLE_HEADER: h}
         return headers
 
     @classmethod
-    def parse_sampled_header(cls, headers: Headers) -> OptBool:
+    def parse_sampled_header(cls, headers: Headers) -> Optional[bool]:
         sampled = headers.get(cls.SAMPLED_ID_HEADER.lower(), None)
-        if sampled is None or sampled == "":
+        if not bool(sampled):
             return None
-        return True if sampled == "1" else False
+        return sampled == "1"
 
     @classmethod
     def parse_debug_header(cls, headers: Headers) -> bool:
-        return True if headers.get(cls.FLAGS_HEADER, "0") == "1" else False
+        return headers.get(cls.FLAGS_HEADER, "0") == "1"
 
     @classmethod
-    def _parse_parent_id(cls, parts: List[str]) -> OptStr:
+    def _parse_parent_id(cls, parts: List[str]) -> int:
         # parse parent_id part from zipkin single header propagation
         parent_id = None
         if len(parts) >= 4:
             parent_id = parts[3]
-        return parent_id
+
+        if not parent_id:
+            return 0
+
+        try:
+            return int(parent_id, 16)
+        except TypeError:
+            log.warning("Fail to parse parent_id: %r", parent_id)
+            return 0
 
     @classmethod
     def _parse_debug(cls, parts: List[str]) -> bool:
@@ -111,8 +123,8 @@ class ZipkinConst:
         sampled = debug if debug else cls._parse_sampled(parts)
 
         context = ZipkinTraceContext(
-            trace_id=parts[0],
-            span_id=parts[1],
+            trace_id=int(parts[0], 16),
+            span_id=int(parts[1], 16),
             parent_id=cls._parse_parent_id(parts),
             sampled=sampled,
             debug=debug,
@@ -134,17 +146,21 @@ class ZipkinConst:
         required = (cls.TRACE_ID_HEADER.lower(), cls.SPAN_ID_HEADER.lower())
         has_b3 = all(h in headers for h in required)
         has_b3_single = cls.SINGLE_HEADER in headers
+        debug = cls.parse_debug_header(headers)
+        sampled = debug if debug else cls.parse_sampled_header(headers)
 
         if not (has_b3_single or has_b3):
             return None
 
         if has_b3:
-            debug = cls.parse_debug_header(headers)
-            sampled = debug if debug else cls.parse_sampled_header(headers)
+            try:
+                parent_id = int(headers[cls.PARENT_ID_HEADER.lower()], 16)
+            except KeyError:
+                parent_id = 0
             context = ZipkinTraceContext(
-                trace_id=headers[cls.TRACE_ID_HEADER.lower()],
-                parent_id=headers.get(cls.PARENT_ID_HEADER.lower()),
-                span_id=headers[cls.SPAN_ID_HEADER.lower()],
+                trace_id=int(headers[cls.TRACE_ID_HEADER.lower()], 16),
+                parent_id=parent_id,
+                span_id=int(headers[cls.SPAN_ID_HEADER.lower()], 16),
                 sampled=sampled,
                 debug=debug,
                 shared=False,

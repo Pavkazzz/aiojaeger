@@ -71,11 +71,11 @@ async def test_handler_with_client_signals_error(client, fake_transport):
 
 
 @pytest.mark.asyncio
-async def test_client_signals(tracer, fake_transport):
-    trace_config = az.make_trace_config(tracer)
+async def test_client_signals(zipkin_tracer):
+    trace_config = az.make_trace_config(zipkin_tracer)
     session = aiohttp.ClientSession(trace_configs=[trace_config])
 
-    with tracer.new_trace() as span:
+    with zipkin_tracer.new_trace() as span:
         span.name("client:signals")
         url = "https://httpbin.org/get"
         # do not propagate headers
@@ -83,22 +83,22 @@ async def test_client_signals(tracer, fake_transport):
         resp = await session.get(url, trace_request_ctx=ctx)
         data = await resp.read()
         assert len(data) > 0
-        assert tracer.make_context(resp.request_info.headers) is None
+        assert zipkin_tracer.make_context(resp.request_info.headers) is None
 
         # by default headers added
         ctx = {"span_context": span.context}
         resp = await session.get(url, trace_request_ctx=ctx)
         await resp.text()
         assert len(data) > 0
-        context = tracer.make_context(resp.request_info.headers)
+        context = zipkin_tracer.make_context(resp.request_info.headers)
         assert context.trace_id == span.context.trace_id
 
     await session.close()
 
-    assert len(fake_transport.records) == 3
-    record1 = fake_transport.records[0].asdict()
-    record2 = fake_transport.records[1].asdict()
-    record3 = fake_transport.records[2].asdict()
+    assert len(zipkin_tracer.transport.records) == 3
+    record1 = zipkin_tracer.transport.records[0].asdict()
+    record2 = zipkin_tracer.transport.records[1].asdict()
+    record3 = zipkin_tracer.transport.records[2].asdict()
     assert record2["parentId"] == record3["id"]
     assert record1["parentId"] == record3["id"]
     assert record3["name"] == "client:signals"

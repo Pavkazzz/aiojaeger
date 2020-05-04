@@ -10,7 +10,7 @@ def pytest_addoption(parser):
         "--no-pull",
         action="store_true",
         default=False,
-        help=("Force docker pull"),
+        help="Force docker pull",
     )
 
 

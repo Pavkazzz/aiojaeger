@@ -43,13 +43,14 @@ APP_AIOJAEGER_KEY = "aiojaeger_tracer"
 REQUEST_AIOJAEGER_KEY = "aiojaeger_span"
 
 __all__ = (
-    "setup",
-    "get_tracer",
-    "request_span",
-    "middleware_maker",
-    "make_trace_config",
     "APP_AIOJAEGER_KEY",
+    "get_tracer",
+    "jaeger_context",
+    "make_trace_config",
+    "middleware_maker",
     "REQUEST_AIOJAEGER_KEY",
+    "request_span",
+    "setup",
 )
 
 Handler = Callable[[Request], Awaitable[Response]]
@@ -80,13 +81,7 @@ def _set_remote_endpoint(span: SpanAbc, request: Request) -> None:
 
 
 def _get_span(request: Request, tracer: Tracer) -> SpanAbc:
-    # builds span from incoming request, if no context found, create
-    # new span
-    context = tracer.make_context(request.headers)
-
-    if context is None:
-        return tracer.new_trace()
-    return tracer.join_span(context)
+    return tracer.get_span(request.headers)
 
 
 def _set_span_properties(span: SpanAbc, request: Request) -> None:

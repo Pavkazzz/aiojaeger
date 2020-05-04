@@ -2,7 +2,9 @@ from typing import Any, Dict, List, NamedTuple, Optional, TypeVar
 
 from .helpers import Endpoint, filter_none
 from .mypy_types import OptInt, OptStr  # flake8: noqa
-from .spancontext import CONSUMER, PRODUCER, BaseTraceContext
+from .spancontext import BaseTraceContext
+from .spancontext.jaeger import JaegerConst
+from .utils import hexify
 
 Annotation = NamedTuple("Annotation", [("value", str), ("timestamp", int)])
 
@@ -43,7 +45,7 @@ class Record:
             return self
         if self._timestamp is None:
             raise RuntimeError("Record should be started first")
-        if ts is not None and self._kind not in (PRODUCER, CONSUMER):
+        if ts is not None:
             self._duration = max(ts - self._timestamp, 1)
         self._finished = True
         return self
@@ -71,10 +73,10 @@ class Record:
     def asdict(self) -> Dict[str, Any]:
         c = self._context
         rec = {
-            "traceId": c.trace_id,
+            "traceId": hexify(c.trace_id),
             "name": self._name,
-            "parentId": c.parent_id,
-            "id": c.span_id,
+            "parentId": hexify(c.parent_id) if c.parent_id else None,
+            "id": hexify(c.span_id),
             "kind": self._kind,
             "timestamp": self._timestamp,
             "duration": self._duration,
@@ -86,3 +88,40 @@ class Record:
             "tags": self._tags,
         }
         return filter_none(rec, ["kind"])
+
+    def asthrift(self, jaeger_thrift: Any) -> Any:
+        c = self._context
+        span = jaeger_thrift.Span()
+        span.traceIdLow = int(c.trace_id)
+        span.traceIdHigh = 0
+        span.spanId = int(c.span_id)
+        span.parentSpanId = int(c.parent_id if c.parent_id else 0)
+        span.operationName = self._name
+        span.startTime = self._timestamp
+        span.duration = self._duration
+        span.flags = 0
+        tags = []
+        if self._kind:
+            tag = jaeger_thrift.Tag()
+            tag.key = "span.kind"
+            tag.vType = jaeger_thrift.TagType.STRING
+            tag.vStr = self._kind
+            tags.append(tag)
+        for key, value in self._tags.items():
+            tag = jaeger_thrift.Tag()
+            tag.key = key
+            tag.vType = jaeger_thrift.TagType.STRING
+            tag.vStr = value
+            tags.append(tag)
+        if JaegerConst.JAEGER_CLIENT_VERSION:
+            tag = jaeger_thrift.Tag()
+            tag.key = JaegerConst.JAEGER_VERSION_TAG_KEY
+            tag.vStr = JaegerConst.JAEGER_CLIENT_VERSION
+            tag.vType = jaeger_thrift.TagType.STRING
+            tags.append(tag)
+        span.tags = tags
+        return span
+
+    @property
+    def service_name(self) -> str:
+        return self._local_endpoint["serviceName"]

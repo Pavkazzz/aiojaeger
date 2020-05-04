@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING  # noqa
+from typing import Type  # noqa
 from typing import Any, AsyncContextManager, Awaitable, Dict, Optional
 
 from aiojaeger.context_managers import _ContextManager
@@ -16,16 +16,9 @@ from .transport import (
     ZipkinTransport,
 )
 
-if TYPE_CHECKING:
 
-    class _Base(AsyncContextManager["Tracer"]):
-        pass
-
-
-else:
-
-    class _Base(AsyncContextManager):
-        pass
+class _Base(AsyncContextManager["Tracer"]):
+    pass
 
 
 class Tracer(_Base):
@@ -67,11 +60,11 @@ class Tracer(_Base):
             return NoopSpan(self, context)
 
         record = Record(context, self._local_endpoint)
-        self._records[context.span_id] = record
+        self._records[context.name] = record
         return Span(self, context, record)
 
     def _send(self, record: Record) -> None:
-        self._records.pop(record.context.span_id, None)
+        self._records.pop(record.context.name, None)
         self._transport.send(record)
 
     def _next_context(
@@ -95,7 +88,7 @@ class Tracer(_Base):
 
         new_context = self._transport.span_context(
             trace_id=trace_id,
-            parent_id=None,
+            parent_id=0,
             span_id=span_id,
             sampled=sampled,
             debug=debug,
@@ -112,8 +105,28 @@ class Tracer(_Base):
     async def __aexit__(self, *args: Any) -> None:
         await self.close()
 
+    @property
+    def context(self) -> Type[BaseTraceContext]:
+        return self._transport.span_context
+
     def make_context(self, headers: Headers) -> Optional[BaseTraceContext]:
-        return self._transport.span_context.make_context(headers)
+        return self.context.make_context(headers)
+
+    def make_headers(self, context: BaseTraceContext) -> Headers:
+        return self.context.make_headers(context)
+
+    def get_span(self, headers: Headers) -> SpanAbc:
+        # builds span from incoming request, if no context found, create
+        # new span
+        context = self.make_context(headers)
+
+        if context is None:
+            return self.new_trace()
+        return self.join_span(context)
+
+    @property
+    def transport(self) -> TransportABC:
+        return self._transport
 
 
 def create_zipkin(

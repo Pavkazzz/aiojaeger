@@ -5,9 +5,9 @@ from aiojaeger.spancontext import DummyTraceContext
 
 def test_basic_ctr():
     context = DummyTraceContext(
-        trace_id="string",
-        span_id="string",
-        parent_id="string",
+        trace_id=1,
+        span_id=2,
+        parent_id=3,
         sampled=True,
         debug=True,
         shared=True,
@@ -28,10 +28,10 @@ def test_basic_ctr():
     )
     dict_record = record.asdict()
     expected = {
-        "traceId": "string",
+        "traceId": "01",
         "name": "string",
-        "parentId": "string",
-        "id": "string",
+        "parentId": "03",
+        "id": "02",
         "kind": "CLIENT",
         "timestamp": 0,
         "duration": 1,

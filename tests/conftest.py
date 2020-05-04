@@ -10,7 +10,11 @@ from aiojaeger.helpers import create_endpoint
 from aiojaeger.sampler import Sampler
 from aiojaeger.spancontext import DummyTraceContext
 from aiojaeger.tracer import Tracer
-from aiojaeger.transport import StubZipkinTransport
+from aiojaeger.transport import (
+    StubJaegerTransport,
+    StubTransport,
+    StubZipkinTransport,
+)
 
 
 @pytest.fixture(scope="session")
@@ -29,23 +33,56 @@ def loop(event_loop):
 
 @pytest.fixture
 def fake_transport():
+    return StubTransport()
+
+
+@pytest.fixture
+def fake_zipkin_transport():
     return StubZipkinTransport()
 
 
-@pytest.fixture(name="tracer")
-def tracer_fixture(fake_transport):
-    sampler = Sampler(sample_rate=1.0)
-    endpoint = create_endpoint("test_service", ipv4="127.0.0.1", port=8080)
-    # TODO: use context manger at some point
-    return Tracer(fake_transport, sampler, endpoint)
+@pytest.fixture
+def fake_jaeger_transport():
+    return StubJaegerTransport()
+
+
+@pytest.fixture
+def factory_tracer():
+    def inner(transport):
+        sampler = Sampler(sample_rate=1.0)
+        endpoint = create_endpoint("test_service", ipv4="127.0.0.1", port=8080)
+        return Tracer(transport, sampler, endpoint)
+
+    return inner
+
+
+@pytest.fixture
+async def tracer(factory_tracer, fake_transport):
+    tracer = factory_tracer(fake_transport)
+    yield tracer
+    await tracer.close()
+
+
+@pytest.fixture
+async def zipkin_tracer(factory_tracer, fake_zipkin_transport):
+    tracer = factory_tracer(fake_zipkin_transport)
+    yield tracer
+    await tracer.close()
+
+
+@pytest.fixture
+async def jaeger_tracer(factory_tracer, fake_jaeger_transport):
+    tracer = factory_tracer(fake_jaeger_transport)
+    yield tracer
+    await tracer.close()
 
 
 @pytest.fixture
 def context():
     context = DummyTraceContext(
-        trace_id="6f9a20b5092fa5e144fd15cc31141cd4",
-        parent_id=None,
-        span_id="41baf1be2fb9bfc5",
+        trace_id=int("6f9a20b5092fa5e144fd15cc31141cd4", 16),
+        parent_id=0,
+        span_id=int("41baf1be2fb9bfc5", 16),
         sampled=True,
         debug=False,
         shared=True,
@@ -117,4 +154,4 @@ async def fake_zipkin(loop):
     await server.close()
 
 
-pytest_plugins = ["docker_fixtures"]
+pytest_plugins = "tests.docker_fixtures"

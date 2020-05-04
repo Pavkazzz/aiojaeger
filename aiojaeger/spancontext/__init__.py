@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from aiojaeger.mypy_types import Headers, OptBool, OptStr
+from aiojaeger.mypy_types import Headers
 
 CLIENT = "CLIENT"
 SERVER = "SERVER"
@@ -17,12 +17,17 @@ class BaseTraceContext(BaseModel):
     process boundaries.
     """
 
-    trace_id: str
-    span_id: str
-    parent_id: OptStr
-    sampled: OptBool
-    debug: bool
+    trace_id: int
+    span_id: int
+    parent_id: int = 0
+    sampled: Optional[bool] = None
+    debug: bool = False
+    debug_id: Optional[str] = None
     shared: bool
+
+    @property
+    def name(self) -> str:
+        return f"{self.trace_id}:{self.span_id}:{self.parent_id}"
 
     @abc.abstractmethod
     def make_headers(self) -> Headers:
@@ -40,8 +45,7 @@ class BaseTraceContext(BaseModel):
 
 
 class DummyTraceContext(BaseTraceContext):
-    @classmethod
-    def make_headers(cls) -> Headers:
+    def make_headers(self) -> Headers:
         return {}
 
     @classmethod
@@ -49,9 +53,9 @@ class DummyTraceContext(BaseTraceContext):
         cls, headers: Headers, sampled: bool = True
     ) -> BaseTraceContext:
         return cls(
-            trace_id="dummy-trace-id",
-            span_id="dummy-span-id",
-            parent_id="dummy-parent-id",
+            trace_id=1,
+            span_id=2,
+            parent_id=0,
             debug=False,
             sampled=sampled,
             shared=False,
